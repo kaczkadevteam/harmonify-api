@@ -52,12 +52,13 @@ namespace Harmonify.WebSockets
                 }
                 
             }
-
-            await webSocketPlayer.webSocket.CloseAsync(
-                receiveResult.CloseStatus.Value,
-                receiveResult.CloseStatusDescription,
-                CancellationToken.None);
-            webSocketPlayers.Remove(webSocketPlayer);
+            if (webSocketPlayer.webSocket.State != WebSocketState.Closed){
+                await webSocketPlayer.webSocket.CloseAsync(
+                    receiveResult.CloseStatus.Value,
+                    receiveResult.CloseStatusDescription,
+                    CancellationToken.None);
+                webSocketPlayers.Remove(webSocketPlayer);
+            }
         }
 
         public static async Task SendToOtherPlayers(string senderGuid, string message){
