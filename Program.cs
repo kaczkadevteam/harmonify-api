@@ -1,3 +1,5 @@
+using Harmonify.WebSockets;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -15,7 +17,7 @@ app.Use(async (context, next) =>
         if (context.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            await Testing.Testing.Echo(webSocket);
+            await WebSocketService.StartConnection(webSocket);
         }
         else
         {
