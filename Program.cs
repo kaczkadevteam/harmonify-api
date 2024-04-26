@@ -10,58 +10,70 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 app.UseWebSockets();
 
-app.Use(async (context, next) =>
-{
+app.Use(
+  async (context, next) =>
+  {
     if (context.Request.Path == "/ws")
     {
-        if (context.WebSockets.IsWebSocketRequest)
-        {
-            using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            await WebSocketService.StartConnection(webSocket);
-        }
-        else
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        }
+      if (context.WebSockets.IsWebSocketRequest)
+      {
+        using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        await WebSocketService.StartConnection(webSocket);
+      }
+      else
+      {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+      }
     }
     else
     {
-        await next(context);
+      await next(context);
     }
-
-});
+  }
+);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 var summaries = new[]
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+  "Freezing",
+  "Bracing",
+  "Chilly",
+  "Cool",
+  "Mild",
+  "Warm",
+  "Balmy",
+  "Hot",
+  "Sweltering",
+  "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
+app.MapGet(
+    "/weatherforecast",
+    () =>
+    {
+      var forecast = Enumerable
+        .Range(1, 5)
+        .Select(index => new WeatherForecast(
+          DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+          Random.Shared.Next(-20, 55),
+          summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+      return forecast;
+    }
+  )
+  .WithName("GetWeatherForecast")
+  .WithOpenApi();
 
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+  public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
-
