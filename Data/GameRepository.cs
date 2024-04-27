@@ -15,7 +15,7 @@ namespace Harmonify.Data
       var game = new Game { Host = host, RoomId = nextRoom.ToString() };
       games.Add(game);
 
-      if (nextRoom == maxRoomNumber)
+      if (nextRoom >= maxRoomNumber)
       {
         nextRoom = minRoomNumber;
       }
