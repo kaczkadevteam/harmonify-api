@@ -11,7 +11,7 @@ namespace Harmonify.Controllers
     readonly IGameRepository repository = gameRepository;
     readonly IPlayerRepository playerRepository = playerRepository;
 
-    [HttpGet("create")]
+    [HttpPost("create")]
     public ActionResult CreateRoom()
     {
       var player = playerRepository.Create();
