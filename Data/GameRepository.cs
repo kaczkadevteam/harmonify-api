@@ -12,7 +12,12 @@ namespace Harmonify.Data
 
     public Game Create(Player host)
     {
-      var game = new Game { Host = host, RoomId = nextRoom.ToString() };
+      var game = new Game
+      {
+        Host = host,
+        RoomId = nextRoom.ToString(),
+        Players = new List<Player>()
+      };
       games.Add(game);
 
       if (nextRoom >= maxRoomNumber)
@@ -25,6 +30,16 @@ namespace Harmonify.Data
       }
 
       return game;
+    }
+
+    public List<Game> GetGames()
+    {
+      return games;
+    }
+
+    public Game GetGame(string roomId)
+    {
+      return games.Find((game) => game.RoomId == roomId);
     }
   }
 }
