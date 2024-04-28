@@ -9,10 +9,12 @@ namespace Harmonify.WebSockets.Room
 
     public static async Task StartConnection(WebSocket webSocket, string guid, string roomId)
     {
-      var player = new WebSocketPlayer(webSocket, guid, roomId);
+      WebSocketPlayer player = new WebSocketPlayer(webSocket, guid, roomId);
       webSocketPlayers.Add(player);
-      Console.WriteLine(player);
-      Console.WriteLine(webSocketPlayers);
+      foreach (var item in webSocketPlayers)
+      {
+        Console.WriteLine(item.ToString());
+      }
 
       await webSocket.SendAsync(
         new ArraySegment<byte>(Encoding.UTF8.GetBytes($"Hello player {webSocketPlayers.Count}")),
@@ -20,18 +22,18 @@ namespace Harmonify.WebSockets.Room
         true,
         CancellationToken.None
       );
-      await webSocket.SendAsync(
-        new ArraySegment<byte>(Encoding.UTF8.GetBytes(player.guid)),
-        WebSocketMessageType.Text,
-        true,
-        CancellationToken.None
-      );
-      Console.WriteLine(webSocketPlayers);
+
+      await ListenForMessages(player);
     }
 
-    public static List<WebSocketPlayer> getWsList()
+    public static String getWsList()
     {
-      return webSocketPlayers;
+      String data = "";
+      foreach (var item in webSocketPlayers)
+      {
+        data = data + "{" + item.ToString() + "}\n\n";
+      }
+      return data;
     }
 
     public static async Task ListenForMessages(WebSocketPlayer webSocketPlayer)
@@ -60,12 +62,12 @@ namespace Harmonify.WebSockets.Room
         //TODO: Can't make this comparison to work
         if (!message.Trim().Equals(Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("end"))))
         {
-          //   await SendToOtherPlayers(webSocketPlayer.guid, message);
+          await SendToOtherPlayers(webSocketPlayer.guid, message);
         }
         else
         {
           //TODO: Calling this method throws error even though all ReceiveAsync are in try-catch
-          //   await EndGame();
+          await EndGame();
           Console.WriteLine("Finish");
           return;
         }
@@ -91,6 +93,43 @@ namespace Harmonify.WebSockets.Room
         );
         webSocketPlayers.Remove(webSocketPlayer);
       }
+    }
+
+    public static async Task SendToOtherPlayers(string senderGuid, string message)
+    {
+      await Task.WhenAll(
+        webSocketPlayers
+          .FindAll((player) => player.guid != senderGuid)
+          .Select(
+            async (player) =>
+            {
+              await player.webSocket.SendAsync(
+                new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None
+              );
+            }
+          )
+      );
+    }
+
+    public static async Task EndGame()
+    {
+      await Task.WhenAll(
+        webSocketPlayers.Select(
+          async (ws) =>
+          {
+            await ws.webSocket.CloseAsync(
+              WebSocketCloseStatus.NormalClosure,
+              "Game finished",
+              CancellationToken.None
+            );
+          }
+        )
+      );
+
+      webSocketPlayers.Clear();
     }
   }
 }
