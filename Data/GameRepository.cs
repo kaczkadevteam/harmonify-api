@@ -37,7 +37,7 @@ namespace Harmonify.Data
       return games;
     }
 
-    public Game GetGame(string roomId)
+    public Game? GetGame(string roomId)
     {
       return games.Find((game) => game.RoomId == roomId);
     }
