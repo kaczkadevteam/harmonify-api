@@ -1,22 +1,20 @@
-using System.Text;
 using Harmonify.Data;
-using Harmonify.Models;
-using Harmonify.WebSockets.Room;
+using Harmonify.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Harmonify.Controllers
 {
   [ApiController]
-  public class RoomController(IGameRepository gameRepository, IPlayerRepository playerRepository)
+  public class RoomController(IGameRepository gameRepository, IWebSocketService webSocketService)
     : ControllerBase
   {
-    readonly IGameRepository _gamerepository = gameRepository;
-    readonly IPlayerRepository _playerrepository = playerRepository;
+    readonly IGameRepository gameRepository = gameRepository;
+    readonly IWebSocketService webSocketService = webSocketService;
 
     [HttpGet("room/ws")]
-    public IActionResult getWsRooms()
+    public IActionResult GetWsRooms()
     {
-      return Ok(WebSocketRoomService.getWsList());
+      return Ok(webSocketService.GetWsList());
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -31,9 +29,9 @@ namespace Harmonify.Controllers
       }
 
       var playerGuid = HttpContext.Request.Query["reconnect"];
-      var room = _gamerepository.GetGame(roomId);
+      var game = gameRepository.GetGame(roomId);
 
-      if (room == null)
+      if (game == null)
       {
         Console.WriteLine($"No room {roomId}");
 
@@ -43,7 +41,7 @@ namespace Harmonify.Controllers
       }
 
       //TODO: Verify if this player isn't already in the game
-      if (room.Host.Guid == playerGuid)
+      if (game.Host.Guid == playerGuid)
       {
         Console.WriteLine("Reconnect host");
 
@@ -53,7 +51,7 @@ namespace Harmonify.Controllers
       }
 
       //TODO: Verify if this player isn't already in the game
-      if (room.Players.Any(player => player.Guid == playerGuid))
+      if (game.Players.Any(player => player.Guid == playerGuid))
       {
         Console.WriteLine("Reconnect");
         HttpContext.Response.StatusCode = 200;
@@ -61,11 +59,8 @@ namespace Harmonify.Controllers
         return;
       }
 
-      Player newPlayer = _playerrepository.Create();
-      room.Players.Add(newPlayer);
-
       using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-      await WebSocketRoomService.StartConnection(webSocket, newPlayer.Guid, roomId);
+      await webSocketService.StartConnection(webSocket, game);
     }
   }
 }

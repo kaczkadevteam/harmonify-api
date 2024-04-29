@@ -1,49 +1,61 @@
 using System.Net.WebSockets;
 using System.Text;
+using Harmonify.Models;
 
-namespace Harmonify.WebSockets.Room
+namespace Harmonify.Services
 {
-  public class WebSocketRoomService
+  public class WebSocketService(IGameService gameService) : IWebSocketService
   {
-    private static List<WebSocketPlayer> webSocketPlayers = [];
+    private readonly IGameService gameService = gameService;
+    private readonly List<WebSocketConnection> webSocketConnections = [];
 
-    public static async Task StartConnection(WebSocket webSocket, string guid, string roomId)
+    public async Task StartConnection(WebSocket webSocket, Game game)
     {
-      WebSocketPlayer player = new WebSocketPlayer(webSocket, guid, roomId);
-      webSocketPlayers.Add(player);
-      foreach (var item in webSocketPlayers)
+      var playerGuid = gameService.AddNewPlayer(game).Guid;
+
+      var connection = new WebSocketConnection
+      {
+        WS = webSocket,
+        PlayerGuid = playerGuid,
+        RoomId = game.RoomId
+      };
+      webSocketConnections.Add(connection);
+
+      foreach (var item in webSocketConnections)
       {
         Console.WriteLine(item.ToString());
       }
 
       await webSocket.SendAsync(
-        new ArraySegment<byte>(Encoding.UTF8.GetBytes($"Hello player {webSocketPlayers.Count}")),
+        new ArraySegment<byte>(
+          Encoding.UTF8.GetBytes($"Hello player {webSocketConnections.Count}")
+        ),
         WebSocketMessageType.Text,
         true,
         CancellationToken.None
       );
 
-      await ListenForMessages(player);
+      await ListenForMessages(connection);
     }
 
-    public static String getWsList()
+    public string GetWsList()
     {
-      String data = "";
-      foreach (var item in webSocketPlayers)
+      string data = "";
+      foreach (var item in webSocketConnections)
       {
         data = data + "{" + item.ToString() + "}\n\n";
       }
       return data;
     }
 
-    public static async Task ListenForMessages(WebSocketPlayer webSocketPlayer)
+    public async Task ListenForMessages(WebSocketConnection connection)
     {
       var buffer = new byte[1024 * 4];
       WebSocketReceiveResult receiveResult;
 
       try
       {
-        receiveResult = await webSocketPlayer.webSocket.ReceiveAsync(
+        receiveResult = await connection.WS.ReceiveAsync(
           new ArraySegment<byte>(buffer),
           CancellationToken.None
         );
@@ -62,11 +74,10 @@ namespace Harmonify.WebSockets.Room
         //TODO: Can't make this comparison to work
         if (!message.Trim().Equals(Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("end"))))
         {
-          await SendToOtherPlayers(webSocketPlayer.guid, message);
+          await SendToOtherPlayers(connection.PlayerGuid, message);
         }
         else
         {
-          //TODO: Calling this method throws error even though all ReceiveAsync are in try-catch
           await EndGame();
           Console.WriteLine("Finish");
           return;
@@ -74,7 +85,7 @@ namespace Harmonify.WebSockets.Room
 
         try
         {
-          receiveResult = await webSocketPlayer.webSocket.ReceiveAsync(
+          receiveResult = await connection.WS.ReceiveAsync(
             new ArraySegment<byte>(buffer),
             CancellationToken.None
           );
@@ -84,26 +95,26 @@ namespace Harmonify.WebSockets.Room
           return;
         }
       }
-      if (webSocketPlayer.webSocket.State != WebSocketState.Closed)
+      if (connection.WS.State != WebSocketState.Closed)
       {
-        await webSocketPlayer.webSocket.CloseAsync(
+        await connection.WS.CloseAsync(
           receiveResult.CloseStatus.Value,
           receiveResult.CloseStatusDescription,
           CancellationToken.None
         );
-        webSocketPlayers.Remove(webSocketPlayer);
+        webSocketConnections.Remove(connection);
       }
     }
 
-    public static async Task SendToOtherPlayers(string senderGuid, string message)
+    public async Task SendToOtherPlayers(string senderGuid, string message)
     {
       await Task.WhenAll(
-        webSocketPlayers
-          .FindAll((player) => player.guid != senderGuid)
+        webSocketConnections
+          .FindAll((player) => player.PlayerGuid != senderGuid)
           .Select(
             async (player) =>
             {
-              await player.webSocket.SendAsync(
+              await player.WS.SendAsync(
                 new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)),
                 WebSocketMessageType.Text,
                 true,
@@ -114,13 +125,13 @@ namespace Harmonify.WebSockets.Room
       );
     }
 
-    public static async Task EndGame()
+    public async Task EndGame()
     {
       await Task.WhenAll(
-        webSocketPlayers.Select(
-          async (ws) =>
+        webSocketConnections.Select(
+          async (player) =>
           {
-            await ws.webSocket.CloseAsync(
+            await player.WS.CloseAsync(
               WebSocketCloseStatus.NormalClosure,
               "Game finished",
               CancellationToken.None
@@ -129,7 +140,7 @@ namespace Harmonify.WebSockets.Room
         )
       );
 
-      webSocketPlayers.Clear();
+      webSocketConnections.Clear();
     }
   }
 }
