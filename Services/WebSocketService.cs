@@ -70,7 +70,17 @@ namespace Harmonify.Services
         var jsonString = Encoding.UTF8.GetString(buffer);
         jsonString = jsonString.Replace("\0", string.Empty);
         Console.WriteLine(jsonString);
-        var message = JsonSerializer.Deserialize<object>(jsonString.Trim());
+        object? message = null;
+        try
+        {
+          message = JsonSerializer.Deserialize<object>(jsonString.Trim());
+        }
+        catch (Exception)
+        {
+          // TODO: use DTO
+          string res = "Wrong JSON format!";
+          await SendMessage(connection.WS, res);
+        }
         Console.WriteLine(jsonString);
         Array.Clear(buffer);
 
