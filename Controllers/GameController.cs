@@ -27,7 +27,7 @@ namespace Harmonify.Controllers
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    [Route("room/{id}")]
+    [Route("game/{id}")]
     public async Task JoinGame(string id)
     {
       if (!HttpContext.WebSockets.IsWebSocketRequest)
@@ -73,7 +73,7 @@ namespace Harmonify.Controllers
       await webSocketService.StartConnection(webSocket, game);
     }
 
-    [HttpGet("room/ws")]
+    [HttpGet("game/ws")]
     public IActionResult GetWsConnections()
     {
       return Ok(webSocketService.GetWsConnections());
