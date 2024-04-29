@@ -6,6 +6,6 @@ namespace Harmonify.Services
   public interface IWebSocketService
   {
     public Task StartConnection(WebSocket webSocket, Game game);
-    public string GetWsList();
+    public string GetWsConnections();
   }
 }

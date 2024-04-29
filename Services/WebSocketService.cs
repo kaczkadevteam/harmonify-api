@@ -38,7 +38,7 @@ namespace Harmonify.Services
       await ListenForMessages(connection);
     }
 
-    public string GetWsList()
+    public string GetWsConnections()
     {
       string data = "";
       foreach (var item in webSocketConnections)
