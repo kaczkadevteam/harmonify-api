@@ -69,7 +69,7 @@ namespace Harmonify.Services
 
         if (message != null)
         {
-          await SendToOtherPlayers(connection.PlayerGuid, message);
+          await SendToOtherPlayers(connection.PlayerGuid, connection.RoomId, message);
         }
 
         try
@@ -113,9 +113,11 @@ namespace Harmonify.Services
       webSocketConnections.Clear();
     }
 
-    public async Task SendToPlayer(string playerGuid, object message)
+    public async Task SendToPlayer(string playerGuid, string gameId, object message)
     {
-      var player = webSocketConnections.Find((connection) => connection.PlayerGuid == playerGuid);
+      var player = webSocketConnections.Find(
+        (connection) => connection.PlayerGuid == playerGuid && connection.RoomId == gameId
+      );
 
       if (player == null)
       {
@@ -125,23 +127,27 @@ namespace Harmonify.Services
       await SendMessage(player.WS, message);
     }
 
-    public async Task SendToAllPlayers(object message)
-    {
-      await Task.WhenAll(
-        webSocketConnections.Select(
-          async (connection) =>
-          {
-            await SendMessage(connection.WS, message);
-          }
-        )
-      );
-    }
-
-    public async Task SendToOtherPlayers(string senderGuid, object message)
+    public async Task SendToAllPlayers(string gameId, object message)
     {
       await Task.WhenAll(
         webSocketConnections
-          .FindAll((connection) => connection.PlayerGuid != senderGuid)
+          .FindAll((connection) => connection.RoomId == gameId)
+          .Select(
+            async (connection) =>
+            {
+              await SendMessage(connection.WS, message);
+            }
+          )
+      );
+    }
+
+    public async Task SendToOtherPlayers(string senderGuid, string gameId, object message)
+    {
+      await Task.WhenAll(
+        webSocketConnections
+          .FindAll(
+            (connection) => connection.PlayerGuid != senderGuid && connection.RoomId == gameId
+          )
           .Select(
             async (connection) =>
             {
