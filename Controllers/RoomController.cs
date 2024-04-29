@@ -19,6 +19,7 @@ namespace Harmonify.Controllers
       return Ok(WebSocketRoomService.getWsList());
     }
 
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("room/{roomId}")]
     public async Task JoinRoom(string roomId)
     {
