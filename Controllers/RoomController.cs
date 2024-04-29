@@ -23,18 +23,26 @@ namespace Harmonify.Controllers
     [Route("room/{roomId}")]
     public async Task JoinRoom(string roomId)
     {
-      var playerGuid = HttpContext.Request.Headers["Auth"];
+      if (!HttpContext.WebSockets.IsWebSocketRequest)
+      {
+        HttpContext.Response.StatusCode = 400;
+        await HttpContext.Response.WriteAsync("Not websocket request");
+        return;
+      }
+
+      var playerGuid = HttpContext.Request.Query["reconnect"];
       var room = _gamerepository.GetGame(roomId);
 
       if (room == null)
       {
-        Console.WriteLine("No room");
+        Console.WriteLine($"No room {roomId}");
 
         HttpContext.Response.StatusCode = 404;
         await HttpContext.Response.WriteAsync("Room not found");
         return;
       }
 
+      //TODO: Verify if this player isn't already in the game
       if (room.Host.Guid == playerGuid)
       {
         Console.WriteLine("Reconnect host");
@@ -44,6 +52,7 @@ namespace Harmonify.Controllers
         return;
       }
 
+      //TODO: Verify if this player isn't already in the game
       if (room.Players.Any(player => player.Guid == playerGuid))
       {
         Console.WriteLine("Reconnect");
@@ -55,20 +64,8 @@ namespace Harmonify.Controllers
       Player newPlayer = _playerrepository.Create();
       room.Players.Add(newPlayer);
 
-      if (HttpContext.WebSockets.IsWebSocketRequest)
-      {
-        HttpContext.Response.Headers.Add("Auth", newPlayer.Guid); // setting header which will be send with response on websocket upgrade
-        using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync(); // sending 101 response, which requires to workaround ActionResult with managing raw responses
-        Console.WriteLine(roomId);
-        await WebSocketRoomService.StartConnection(webSocket, newPlayer.Guid, roomId);
-        return;
-      }
-      else
-      {
-        HttpContext.Response.StatusCode = 400;
-        await HttpContext.Response.WriteAsync("Not websocket request");
-        return;
-      }
+      using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+      await WebSocketRoomService.StartConnection(webSocket, newPlayer.Guid, roomId);
     }
   }
 }
