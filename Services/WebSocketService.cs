@@ -26,8 +26,15 @@ namespace Harmonify.Services
       {
         Console.WriteLine(item.ToString());
       }
-
-      await SendMessage(connection.WS, $"Hello player {webSocketConnections.Count}");
+      var playersInRoom = webSocketConnections
+        .FindAll(
+          (conn) =>
+          {
+            return conn.GameId == connection.GameId;
+          }
+        )
+        .Count();
+      await SendMessage(connection.WS, $"Hello player {playersInRoom}");
       await ListenForMessages(connection);
     }
 
