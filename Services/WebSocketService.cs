@@ -18,7 +18,7 @@ namespace Harmonify.Services
       {
         WS = webSocket,
         PlayerGuid = playerGuid,
-        RoomId = game.RoomId
+        GameId = game.Id
       };
       webSocketConnections.Add(connection);
 
@@ -69,7 +69,7 @@ namespace Harmonify.Services
 
         if (message != null)
         {
-          await SendToOtherPlayers(connection.PlayerGuid, connection.RoomId, message);
+          await SendToOtherPlayers(connection.PlayerGuid, connection.GameId, message);
         }
 
         try
@@ -115,23 +115,23 @@ namespace Harmonify.Services
 
     public async Task SendToPlayer(string playerGuid, string gameId, object message)
     {
-      var player = webSocketConnections.Find(
-        (connection) => connection.PlayerGuid == playerGuid && connection.RoomId == gameId
+      var connection = webSocketConnections.Find(
+        (connection) => connection.PlayerGuid == playerGuid && connection.GameId == gameId
       );
 
-      if (player == null)
+      if (connection == null)
       {
         return;
       }
 
-      await SendMessage(player.WS, message);
+      await SendMessage(connection.WS, message);
     }
 
     public async Task SendToAllPlayers(string gameId, object message)
     {
       await Task.WhenAll(
         webSocketConnections
-          .FindAll((connection) => connection.RoomId == gameId)
+          .FindAll((connection) => connection.GameId == gameId)
           .Select(
             async (connection) =>
             {
@@ -146,7 +146,7 @@ namespace Harmonify.Services
       await Task.WhenAll(
         webSocketConnections
           .FindAll(
-            (connection) => connection.PlayerGuid != senderGuid && connection.RoomId == gameId
+            (connection) => connection.PlayerGuid != senderGuid && connection.GameId == gameId
           )
           .Select(
             async (connection) =>

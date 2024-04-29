@@ -21,14 +21,14 @@ namespace Harmonify.Controllers
       var player = playerRepository.Create();
       var game = gameRepository.Create(player);
 
-      var createdGame = new CreatedGameDto { HostGuid = player.Guid, RoomId = game.RoomId };
+      var createdGame = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id };
 
       return Ok(createdGame);
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    [Route("room/{roomId}")]
-    public async Task JoinGame(string roomId)
+    [Route("room/{id}")]
+    public async Task JoinGame(string id)
     {
       if (!HttpContext.WebSockets.IsWebSocketRequest)
       {
@@ -39,14 +39,14 @@ namespace Harmonify.Controllers
 
       //FIXME: If there is guid but it isn't in the game there should be error instead of starting connection?
       var playerGuid = HttpContext.Request.Query["reconnect"];
-      var game = gameRepository.GetGame(roomId);
+      var game = gameRepository.GetGame(id);
 
       if (game == null)
       {
-        Console.WriteLine($"No room {roomId}");
+        Console.WriteLine($"No game {id}");
 
         HttpContext.Response.StatusCode = 404;
-        await HttpContext.Response.WriteAsync("Room not found");
+        await HttpContext.Response.WriteAsync("Game not found");
         return;
       }
 
