@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using Harmonify.Models;
 
 namespace Harmonify.Services
@@ -26,15 +27,7 @@ namespace Harmonify.Services
         Console.WriteLine(item.ToString());
       }
 
-      await webSocket.SendAsync(
-        new ArraySegment<byte>(
-          Encoding.UTF8.GetBytes($"Hello player {webSocketConnections.Count}")
-        ),
-        WebSocketMessageType.Text,
-        true,
-        CancellationToken.None
-      );
-
+      await SendMessage(connection.WS, $"Hello player {webSocketConnections.Count}");
       await ListenForMessages(connection);
     }
 
@@ -67,20 +60,16 @@ namespace Harmonify.Services
 
       while (!receiveResult.CloseStatus.HasValue)
       {
-        var message = Encoding.UTF8.GetString(buffer);
-        Console.WriteLine(message);
+        var jsonString = Encoding.UTF8.GetString(buffer);
+        jsonString = jsonString.Replace("\0", string.Empty);
+        Console.WriteLine(jsonString);
+        var message = JsonSerializer.Deserialize<object>(jsonString.Trim());
+        Console.WriteLine(jsonString);
         Array.Clear(buffer);
 
-        //TODO: Can't make this comparison to work
-        if (!message.Trim().Equals(Encoding.UTF8.GetString(Encoding.UTF8.GetBytes("end"))))
+        if (message != null)
         {
           await SendToOtherPlayers(connection.PlayerGuid, message);
-        }
-        else
-        {
-          await EndGame();
-          Console.WriteLine("Finish");
-          return;
         }
 
         try
@@ -106,32 +95,13 @@ namespace Harmonify.Services
       }
     }
 
-    public async Task SendToOtherPlayers(string senderGuid, string message)
-    {
-      await Task.WhenAll(
-        webSocketConnections
-          .FindAll((player) => player.PlayerGuid != senderGuid)
-          .Select(
-            async (player) =>
-            {
-              await player.WS.SendAsync(
-                new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)),
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None
-              );
-            }
-          )
-      );
-    }
-
     public async Task EndGame()
     {
       await Task.WhenAll(
         webSocketConnections.Select(
-          async (player) =>
+          async (connection) =>
           {
-            await player.WS.CloseAsync(
+            await connection.WS.CloseAsync(
               WebSocketCloseStatus.NormalClosure,
               "Game finished",
               CancellationToken.None
@@ -141,6 +111,56 @@ namespace Harmonify.Services
       );
 
       webSocketConnections.Clear();
+    }
+
+    public async Task SendToPlayer(string playerGuid, object message)
+    {
+      var player = webSocketConnections.Find((connection) => connection.PlayerGuid == playerGuid);
+
+      if (player == null)
+      {
+        return;
+      }
+
+      await SendMessage(player.WS, message);
+    }
+
+    public async Task SendToAllPlayers(object message)
+    {
+      await Task.WhenAll(
+        webSocketConnections.Select(
+          async (connection) =>
+          {
+            await SendMessage(connection.WS, message);
+          }
+        )
+      );
+    }
+
+    public async Task SendToOtherPlayers(string senderGuid, object message)
+    {
+      await Task.WhenAll(
+        webSocketConnections
+          .FindAll((connection) => connection.PlayerGuid != senderGuid)
+          .Select(
+            async (connection) =>
+            {
+              await SendMessage(connection.WS, message);
+            }
+          )
+      );
+    }
+
+    private static async Task SendMessage(WebSocket webSocket, object message)
+    {
+      byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message);
+
+      await webSocket.SendAsync(
+        new ArraySegment<byte>(jsonBytes),
+        WebSocketMessageType.Text,
+        true,
+        CancellationToken.None
+      );
     }
   }
 }
