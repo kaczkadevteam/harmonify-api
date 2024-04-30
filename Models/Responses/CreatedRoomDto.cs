@@ -1,4 +1,4 @@
-namespace Harmonify.Models
+namespace Harmonify.Responses
 {
   public class CreatedGameDto
   {
