@@ -15,5 +15,10 @@ namespace Harmonify.Services
       game.Players.Add(player);
       return player;
     }
+
+    public void RemoveGame(string id)
+    {
+      gameRepository.RemoveGame(id);
+    }
   }
 }

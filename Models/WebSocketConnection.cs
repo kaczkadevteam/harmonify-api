@@ -12,7 +12,10 @@ namespace Harmonify.Models
 
     public override string ToString()
     {
-      return "Websocket: " + WS + "\ngameId: " + GameId + "\nguid: " + PlayerGuid;
+      return $@"Websocket: {WS} 
+gameId: {GameId}
+guid: {PlayerGuid}
+socket state: {WS.State}";
     }
   }
 }

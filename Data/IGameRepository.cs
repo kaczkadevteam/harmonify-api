@@ -7,5 +7,6 @@ namespace Harmonify.Data
     Game Create(Player host);
     List<Game> GetGames();
     Game? GetGame(string id);
+    void RemoveGame(string id);
   }
 }

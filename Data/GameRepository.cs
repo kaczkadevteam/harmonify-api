@@ -41,5 +41,11 @@ namespace Harmonify.Data
     {
       return games.Find((game) => game.Id == id);
     }
+
+    public void RemoveGame(string id)
+    {
+      Console.WriteLine($"Removed game {id}");
+      games.RemoveAll((game) => game.Id == id);
+    }
   }
 }

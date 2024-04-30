@@ -62,7 +62,7 @@ namespace Harmonify.Services
         else if (message.Type == ResponseType.EndGame)
         {
           await EndGame(connection.GameId);
-          break;
+          return;
         }
         else
         {
@@ -77,16 +77,7 @@ namespace Harmonify.Services
         }
       }
 
-      if (connection.WS.State != WebSocketState.Closed)
-      {
-        await connection.WS.CloseAsync(
-          WebSocketCloseStatus.NormalClosure,
-          "Disconnected",
-          CancellationToken.None
-        );
-        //TODO: Probably shouldn't remove if we plan to support reconnecting
-        webSocketConnections.Remove(connection);
-      }
+      await HandleDisconnectFromClient(connection);
     }
 
     public async Task EndGame(string gameId)
@@ -97,16 +88,13 @@ namespace Harmonify.Services
           .Select(
             async (connection) =>
             {
-              await connection.WS.CloseAsync(
-                WebSocketCloseStatus.NormalClosure,
-                "Game finished",
-                CancellationToken.None
-              );
+              await CloseSafely(connection.WS, "Game finished");
             }
           )
       );
 
       webSocketConnections.RemoveAll((connection) => connection.GameId == gameId);
+      gameService.RemoveGame(gameId);
     }
 
     public async Task SendToPlayer(string playerGuid, string gameId, object message)
@@ -153,16 +141,42 @@ namespace Harmonify.Services
       );
     }
 
+    private async Task HandleDisconnectFromClient(WebSocketConnection connection)
+    {
+      if (connection.WS.State != WebSocketState.Closed)
+      {
+        await CloseSafely(connection.WS);
+
+        /**
+        * If there is no connected player in game, remove it
+        */
+        if (
+          !webSocketConnections.Exists(
+            (searchedConnection) =>
+              searchedConnection.WS.State != WebSocketState.Closed
+              && searchedConnection.GameId == connection.GameId
+          )
+        )
+        {
+          webSocketConnections.RemoveAll((conn) => conn.GameId == connection.GameId);
+          gameService.RemoveGame(connection.GameId);
+        }
+      }
+    }
+
     private static async Task SendMessage(WebSocket webSocket, object message)
     {
       byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, JsonHandler.jsonOptions);
-      //TODO: Check if isn't closed
-      await webSocket.SendAsync(
-        new ArraySegment<byte>(jsonBytes),
-        WebSocketMessageType.Text,
-        true,
-        CancellationToken.None
-      );
+
+      if (webSocket.State != WebSocketState.Closed)
+      {
+        await webSocket.SendAsync(
+          new ArraySegment<byte>(jsonBytes),
+          WebSocketMessageType.Text,
+          true,
+          CancellationToken.None
+        );
+      }
     }
 
     private static async Task<Response<object?>?> ReadMessage(WebSocketConnection connection)
@@ -195,6 +209,18 @@ namespace Harmonify.Services
           Type = ResponseType.IncorrectFormat,
           ErrorMessage = "Incorrect message format"
         };
+      }
+    }
+
+    private static async Task CloseSafely(WebSocket webSocket, string message = "Disconnected")
+    {
+      if (webSocket.State != WebSocketState.Closed)
+      {
+        await webSocket.CloseAsync(
+          WebSocketCloseStatus.NormalClosure,
+          "Game finished",
+          CancellationToken.None
+        );
       }
     }
   }
