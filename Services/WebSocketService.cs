@@ -50,13 +50,12 @@ namespace Harmonify.Services
 
     public async Task ListenForMessages(WebSocketConnection connection)
     {
-      var buffer = new byte[1024 * 4];
       WebSocketReceiveResult receiveResult;
 
       try
       {
         receiveResult = await connection.WS.ReceiveAsync(
-          new ArraySegment<byte>(buffer),
+          new ArraySegment<byte>(connection.Buffer),
           CancellationToken.None
         );
       }
@@ -67,9 +66,9 @@ namespace Harmonify.Services
 
       while (!receiveResult.CloseStatus.HasValue)
       {
-        var jsonString = Encoding.UTF8.GetString(buffer);
+        var jsonString = Encoding.UTF8.GetString(connection.Buffer);
         jsonString = jsonString.Replace("\0", string.Empty);
-        Array.Clear(buffer);
+        Array.Clear(connection.Buffer);
 
         Console.WriteLine(jsonString);
 
@@ -94,7 +93,7 @@ namespace Harmonify.Services
         try
         {
           receiveResult = await connection.WS.ReceiveAsync(
-            new ArraySegment<byte>(buffer),
+            new ArraySegment<byte>(connection.Buffer),
             CancellationToken.None
           );
         }
