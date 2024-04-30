@@ -1,5 +1,5 @@
 using Harmonify.Data;
-using Harmonify.ErrorHandlers;
+using Harmonify.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 

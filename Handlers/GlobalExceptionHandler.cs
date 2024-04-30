@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 
-namespace Harmonify.ErrorHandlers
+namespace Harmonify.Handlers
 {
   public class GlobalExceptionHandler : IExceptionHandler
   {
@@ -13,7 +13,8 @@ namespace Harmonify.ErrorHandlers
       // Return false to continue with the default behavior
       // - or - return true to signal that this exception is handled
       httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-      await httpContext.Response.WriteAsJsonAsync("Something gone wrong!");
+      //TODO: Use DTO response
+      await httpContext.Response.WriteAsJsonAsync("Something gone wrong!", cancellationToken);
       return true;
     }
   }
