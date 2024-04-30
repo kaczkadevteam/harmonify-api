@@ -75,6 +75,7 @@ namespace Harmonify.Services
           "Disconnected",
           CancellationToken.None
         );
+        //TODO: Probably shouldn't remove if we plan to support reconnecting
         webSocketConnections.Remove(connection);
       }
     }
@@ -146,7 +147,7 @@ namespace Harmonify.Services
     private static async Task SendMessage(WebSocket webSocket, object message)
     {
       byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message);
-
+      //TODO: Check if isn't closed
       await webSocket.SendAsync(
         new ArraySegment<byte>(jsonBytes),
         WebSocketMessageType.Text,

@@ -2,6 +2,7 @@ using Harmonify.Data;
 using Harmonify.Models;
 using Harmonify.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 
 namespace Harmonify.Controllers
 {
@@ -37,10 +38,7 @@ namespace Harmonify.Controllers
         return;
       }
 
-      //FIXME: If there is guid but it isn't in the game there should be error instead of starting connection?
-      var playerGuid = HttpContext.Request.Query["reconnect"];
       var game = gameRepository.GetGame(id);
-
       if (game == null)
       {
         HttpContext.Response.StatusCode = 404;
@@ -48,20 +46,26 @@ namespace Harmonify.Controllers
         return;
       }
 
-      //TODO: Verify if this player isn't already in the game
-      if (game.Host.Guid == playerGuid)
+      var playerGuid = HttpContext.Request.Query["reconnect"];
+      if (playerGuid != StringValues.Empty)
       {
-        HttpContext.Response.StatusCode = 200;
-        await HttpContext.Response.WriteAsync("Reconnect host");
-        return;
-      }
-
-      //TODO: Verify if this player isn't already in the game
-      if (game.Players.Any(player => player.Guid == playerGuid))
-      {
-        HttpContext.Response.StatusCode = 200;
-        await HttpContext.Response.WriteAsync("Reconnect");
-        return;
+        //TODO: Verify if this player isn't already in the game
+        if (game.Host.Guid == playerGuid)
+        {
+          throw new NotImplementedException("Reconnect host");
+        }
+        //TODO: Verify if this player isn't already in the game
+        else if (game.Players.Any(player => player.Guid == playerGuid))
+        {
+          throw new NotImplementedException("Reconnect player");
+        }
+        else
+        {
+          //FIXME: Isn't there better status to represent this error?
+          HttpContext.Response.StatusCode = 400;
+          //TODO: use DTO
+          await HttpContext.Response.WriteAsync("Couldn't find this player in this game");
+        }
       }
 
       using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
