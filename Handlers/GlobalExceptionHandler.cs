@@ -1,3 +1,4 @@
+using Harmonify.Responses;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace Harmonify.Handlers
@@ -10,11 +11,14 @@ namespace Harmonify.Handlers
       CancellationToken cancellationToken
     )
     {
-      // Return false to continue with the default behavior
-      // - or - return true to signal that this exception is handled
+      var response = new ResponseError<object>
+      {
+        Type = ResponseType.UnknownError,
+        ErrorMessage = "Something went wrong!"
+      };
+
       httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-      //TODO: Use DTO response
-      await httpContext.Response.WriteAsJsonAsync("Something gone wrong!", cancellationToken);
+      await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
       return true;
     }
   }

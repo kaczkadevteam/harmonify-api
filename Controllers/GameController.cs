@@ -1,5 +1,5 @@
 using Harmonify.Data;
-using Harmonify.Models;
+using Harmonify.Responses;
 using Harmonify.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -22,7 +22,11 @@ namespace Harmonify.Controllers
       var player = playerRepository.Create();
       var game = gameRepository.Create(player);
 
-      var createdGame = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id };
+      var createdGame = new Response<CreatedGameDto>
+      {
+        Type = ResponseType.CreatedRoom,
+        Data = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id }
+      };
 
       return Ok(createdGame);
     }
@@ -63,8 +67,12 @@ namespace Harmonify.Controllers
         {
           //FIXME: Isn't there better status to represent this error?
           HttpContext.Response.StatusCode = 400;
-          //TODO: use DTO
-          await HttpContext.Response.WriteAsync("Couldn't find this player in this game");
+          var response = new ResponseError<object>
+          {
+            Type = ResponseType.NoPlayerInGame,
+            ErrorMessage = "Couldn't find this player in this game"
+          };
+          await HttpContext.Response.WriteAsJsonAsync(response);
         }
       }
 
@@ -75,7 +83,12 @@ namespace Harmonify.Controllers
     [HttpGet("game/ws")]
     public IActionResult GetWsConnections()
     {
-      return Ok(webSocketService.GetWsConnections());
+      var response = new Response<string>
+      {
+        Type = ResponseType.ConnectionsList,
+        Data = webSocketService.GetWsConnections()
+      };
+      return Ok(response);
     }
   }
 }
