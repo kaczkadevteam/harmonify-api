@@ -43,8 +43,6 @@ namespace Harmonify.Controllers
 
       if (game == null)
       {
-        Console.WriteLine($"No game {id}");
-
         HttpContext.Response.StatusCode = 404;
         await HttpContext.Response.WriteAsync("Game not found");
         return;
@@ -53,8 +51,6 @@ namespace Harmonify.Controllers
       //TODO: Verify if this player isn't already in the game
       if (game.Host.Guid == playerGuid)
       {
-        Console.WriteLine("Reconnect host");
-
         HttpContext.Response.StatusCode = 200;
         await HttpContext.Response.WriteAsync("Reconnect host");
         return;
@@ -63,7 +59,6 @@ namespace Harmonify.Controllers
       //TODO: Verify if this player isn't already in the game
       if (game.Players.Any(player => player.Guid == playerGuid))
       {
-        Console.WriteLine("Reconnect");
         HttpContext.Response.StatusCode = 200;
         await HttpContext.Response.WriteAsync("Reconnect");
         return;

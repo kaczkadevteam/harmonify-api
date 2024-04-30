@@ -22,11 +22,6 @@ namespace Harmonify.Services
       };
       webSocketConnections.Add(connection);
 
-      foreach (var item in webSocketConnections)
-      {
-        Console.WriteLine(item.ToString());
-      }
-
       //TODO: use DTO
       await SendMessage(connection.WS, $"Hello player {playerGuid}");
       await ListenForMessages(connection);
@@ -55,7 +50,6 @@ namespace Harmonify.Services
 
         if (message.ToString() == "Close connection")
         {
-          Console.WriteLine($"Connection closed with ${connection}");
           break;
         }
 
