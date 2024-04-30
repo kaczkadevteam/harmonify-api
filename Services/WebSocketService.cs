@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Harmonify.Models;
+using Harmonify.Responses;
 
 namespace Harmonify.Services
 {
@@ -22,8 +23,8 @@ namespace Harmonify.Services
       };
       webSocketConnections.Add(connection);
 
-      //TODO: use DTO
-      await SendMessage(connection.WS, $"Hello player {playerGuid}");
+      var response = new Response<string> { Type = ResponseType.NewPlayer, Data = playerGuid };
+      await SendMessage(connection.WS, response);
       await ListenForMessages(connection);
     }
 
@@ -48,16 +49,16 @@ namespace Harmonify.Services
           continue;
         }
 
-        if (message.ToString() == "Close connection")
+        if (message.Type == ResponseType.ConnectionClosed)
         {
           break;
         }
 
-        if (message.ToString() == "Wrong JSON format!")
+        if (message is ResponseError<object>)
         {
           await SendMessage(connection.WS, message);
         }
-        else if (message.ToString() == "End game")
+        else if (message.Type == ResponseType.EndGame)
         {
           await EndGame(connection.GameId);
           break;
@@ -65,6 +66,13 @@ namespace Harmonify.Services
         else
         {
           await SendToOtherPlayers(connection.PlayerGuid, connection.GameId, message);
+
+          var response = new Response<string>
+          {
+            Type = ResponseType.Acknowledged,
+            Data = "Message delivered"
+          };
+          await SendMessage(connection.WS, response);
         }
       }
 
@@ -156,7 +164,7 @@ namespace Harmonify.Services
       );
     }
 
-    private static async Task<object?> ReadMessage(WebSocketConnection connection)
+    private static async Task<Response<object?>?> ReadMessage(WebSocketConnection connection)
     {
       var receiveResult = await connection.WS.ReceiveAsync(
         new ArraySegment<byte>(connection.Buffer),
@@ -165,8 +173,7 @@ namespace Harmonify.Services
 
       if (receiveResult.CloseStatus.HasValue)
       {
-        // TODO: use DTO
-        return "Close connection";
+        return new Response<object?> { Type = ResponseType.ConnectionClosed };
       }
 
       var jsonString = Encoding.UTF8.GetString(connection.Buffer);
@@ -175,12 +182,15 @@ namespace Harmonify.Services
 
       try
       {
-        return JsonSerializer.Deserialize<object>(jsonString.Trim());
+        return JsonSerializer.Deserialize<Response<object?>>(jsonString.Trim());
       }
       catch (Exception)
       {
-        // TODO: use DTO
-        return "Wrong JSON format!";
+        return new ResponseError<object?>
+        {
+          Type = ResponseType.IncorrectFormat,
+          ErrorMessage = "Incorrect message format"
+        };
       }
     }
   }
