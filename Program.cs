@@ -4,7 +4,15 @@ using Harmonify.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder
+  .Services.AddControllers()
+  .AddJsonOptions(options =>
+  {
+    options.JsonSerializerOptions.Converters.Add(JsonHandler.enumConverter);
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonHandler
+      .jsonOptions
+      .PropertyNamingPolicy;
+  });
 builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
 

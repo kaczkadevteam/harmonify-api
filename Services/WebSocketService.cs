@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using Harmonify.Handlers;
 using Harmonify.Models;
 using Harmonify.Responses;
 
@@ -154,7 +155,7 @@ namespace Harmonify.Services
 
     private static async Task SendMessage(WebSocket webSocket, object message)
     {
-      byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message);
+      byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, JsonHandler.jsonOptions);
       //TODO: Check if isn't closed
       await webSocket.SendAsync(
         new ArraySegment<byte>(jsonBytes),
@@ -182,7 +183,10 @@ namespace Harmonify.Services
 
       try
       {
-        return JsonSerializer.Deserialize<Response<object?>>(jsonString.Trim());
+        return JsonSerializer.Deserialize<Response<object?>>(
+          jsonString.Trim(),
+          JsonHandler.jsonOptions
+        );
       }
       catch (Exception)
       {

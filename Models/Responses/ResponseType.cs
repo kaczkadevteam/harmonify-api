@@ -1,8 +1,5 @@
-using System.Text.Json.Serialization;
-
 namespace Harmonify.Responses
 {
-  [JsonConverter(typeof(JsonStringEnumConverter))]
   public enum ResponseType
   {
     Acknowledged,

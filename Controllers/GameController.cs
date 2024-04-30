@@ -1,5 +1,4 @@
 using Harmonify.Data;
-using Harmonify.Models;
 using Harmonify.Responses;
 using Harmonify.Services;
 using Microsoft.AspNetCore.Mvc;
