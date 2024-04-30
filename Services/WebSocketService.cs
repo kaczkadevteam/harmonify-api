@@ -33,7 +33,7 @@ namespace Harmonify.Services
             return conn.GameId == connection.GameId;
           }
         )
-        .Count;
+        .Count();
       await SendMessage(connection.WS, $"Hello player {playersInRoom}");
       await ListenForMessages(connection);
     }
@@ -71,8 +71,7 @@ namespace Harmonify.Services
         Array.Clear(connection.Buffer);
 
         Console.WriteLine(jsonString);
-
-        object? message;
+        object? message = null;
         try
         {
           message = JsonSerializer.Deserialize<object>(jsonString.Trim());
@@ -82,8 +81,8 @@ namespace Harmonify.Services
           // TODO: use DTO
           string res = "Wrong JSON format!";
           await SendMessage(connection.WS, res);
-          return;
         }
+        Console.WriteLine(jsonString);
 
         if (message != null)
         {
@@ -102,7 +101,6 @@ namespace Harmonify.Services
           return;
         }
       }
-
       if (connection.WS.State != WebSocketState.Closed)
       {
         await connection.WS.CloseAsync(
