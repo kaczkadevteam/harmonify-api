@@ -26,14 +26,9 @@ namespace Harmonify.Services
       {
         Console.WriteLine(item.ToString());
       }
-      var playersInRoom = webSocketConnections
-        .FindAll(
-          (conn) =>
-          {
-            return conn.GameId == connection.GameId;
-          }
-        )
-        .Count;
+      var playersInRoom = game.Players.Count;
+
+      //TODO: use DTO
       await SendMessage(connection.WS, $"Hello player {playersInRoom}");
       await ListenForMessages(connection);
     }
@@ -50,62 +45,36 @@ namespace Harmonify.Services
 
     public async Task ListenForMessages(WebSocketConnection connection)
     {
-      WebSocketReceiveResult receiveResult;
-
-      try
+      while (true)
       {
-        receiveResult = await connection.WS.ReceiveAsync(
-          new ArraySegment<byte>(connection.Buffer),
-          CancellationToken.None
-        );
-      }
-      catch (Exception)
-      {
-        return;
-      }
+        var message = await ReadMessage(connection);
 
-      while (!receiveResult.CloseStatus.HasValue)
-      {
-        var jsonString = Encoding.UTF8.GetString(connection.Buffer);
-        jsonString = jsonString.Replace("\0", string.Empty);
-        Array.Clear(connection.Buffer);
-
-        Console.WriteLine(jsonString);
-        object? message = null;
-        try
+        if (message == null)
         {
-          message = JsonSerializer.Deserialize<object>(jsonString.Trim());
+          continue;
         }
-        catch (Exception)
-        {
-          // TODO: use DTO
-          string res = "Wrong JSON format!";
-          await SendMessage(connection.WS, res);
-        }
-        Console.WriteLine(jsonString);
 
-        if (message != null)
+        if (message.ToString() == "Close connection")
+        {
+          Console.WriteLine($"Connection closed with ${connection}");
+          break;
+        }
+
+        if (message.ToString() == "Wrong JSON format!")
+        {
+          await SendMessage(connection.WS, message);
+        }
+        else
         {
           await SendToOtherPlayers(connection.PlayerGuid, connection.GameId, message);
         }
-
-        try
-        {
-          receiveResult = await connection.WS.ReceiveAsync(
-            new ArraySegment<byte>(connection.Buffer),
-            CancellationToken.None
-          );
-        }
-        catch (Exception)
-        {
-          return;
-        }
       }
+
       if (connection.WS.State != WebSocketState.Closed)
       {
         await connection.WS.CloseAsync(
-          receiveResult.CloseStatus.Value,
-          receiveResult.CloseStatusDescription,
+          WebSocketCloseStatus.NormalClosure,
+          "Disconnected",
           CancellationToken.None
         );
         webSocketConnections.Remove(connection);
@@ -184,6 +153,34 @@ namespace Harmonify.Services
         true,
         CancellationToken.None
       );
+    }
+
+    private static async Task<object?> ReadMessage(WebSocketConnection connection)
+    {
+      var receiveResult = await connection.WS.ReceiveAsync(
+        new ArraySegment<byte>(connection.Buffer),
+        CancellationToken.None
+      );
+
+      if (receiveResult.CloseStatus.HasValue)
+      {
+        // TODO: use DTO
+        return "Close connection";
+      }
+
+      var jsonString = Encoding.UTF8.GetString(connection.Buffer);
+      jsonString = jsonString.Replace("\0", string.Empty);
+      Array.Clear(connection.Buffer);
+
+      try
+      {
+        return JsonSerializer.Deserialize<object>(jsonString.Trim());
+      }
+      catch (Exception)
+      {
+        // TODO: use DTO
+        return "Wrong JSON format!";
+      }
     }
   }
 }
