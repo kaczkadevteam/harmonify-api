@@ -33,7 +33,7 @@ namespace Harmonify.Services
             return conn.GameId == connection.GameId;
           }
         )
-        .Count();
+        .Count;
       await SendMessage(connection.WS, $"Hello player {playersInRoom}");
       await ListenForMessages(connection);
     }
