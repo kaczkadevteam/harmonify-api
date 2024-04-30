@@ -26,10 +26,9 @@ namespace Harmonify.Services
       {
         Console.WriteLine(item.ToString());
       }
-      var playersInRoom = game.Players.Count;
 
       //TODO: use DTO
-      await SendMessage(connection.WS, $"Hello player {playersInRoom}");
+      await SendMessage(connection.WS, $"Hello player {playerGuid}");
       await ListenForMessages(connection);
     }
 
@@ -64,6 +63,11 @@ namespace Harmonify.Services
         {
           await SendMessage(connection.WS, message);
         }
+        else if (message.ToString() == "End game")
+        {
+          await EndGame(connection.GameId);
+          break;
+        }
         else
         {
           await SendToOtherPlayers(connection.PlayerGuid, connection.GameId, message);
@@ -81,22 +85,24 @@ namespace Harmonify.Services
       }
     }
 
-    public async Task EndGame()
+    public async Task EndGame(string gameId)
     {
       await Task.WhenAll(
-        webSocketConnections.Select(
-          async (connection) =>
-          {
-            await connection.WS.CloseAsync(
-              WebSocketCloseStatus.NormalClosure,
-              "Game finished",
-              CancellationToken.None
-            );
-          }
-        )
+        webSocketConnections
+          .FindAll((connection) => connection.GameId == gameId)
+          .Select(
+            async (connection) =>
+            {
+              await connection.WS.CloseAsync(
+                WebSocketCloseStatus.NormalClosure,
+                "Game finished",
+                CancellationToken.None
+              );
+            }
+          )
       );
 
-      webSocketConnections.Clear();
+      webSocketConnections.RemoveAll((connection) => connection.GameId == gameId);
     }
 
     public async Task SendToPlayer(string playerGuid, string gameId, object message)
