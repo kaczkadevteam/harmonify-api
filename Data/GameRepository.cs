@@ -6,25 +6,40 @@ namespace Harmonify.Data
   {
     private readonly List<Game> games = [];
 
-    private const int minRoomNumber = 1000;
-    private const int maxRoomNumber = 10_000;
-    private int nextRoom = 1000;
+    private const int minGameIdNumber = 1000;
+    private const int maxGameIdNumber = 10_000;
+    private int nextGameId = 1000;
 
     public Game Create(Player host)
     {
-      var game = new Game { Host = host, RoomId = nextRoom.ToString() };
+      var game = new Game
+      {
+        Host = host,
+        Id = nextGameId.ToString(),
+        Players = new List<Player>()
+      };
       games.Add(game);
 
-      if (nextRoom >= maxRoomNumber)
+      if (nextGameId >= maxGameIdNumber)
       {
-        nextRoom = minRoomNumber;
+        nextGameId = minGameIdNumber;
       }
       else
       {
-        nextRoom++;
+        nextGameId++;
       }
 
       return game;
+    }
+
+    public List<Game> GetGames()
+    {
+      return games;
+    }
+
+    public Game? GetGame(string id)
+    {
+      return games.Find((game) => game.Id == id);
     }
   }
 }

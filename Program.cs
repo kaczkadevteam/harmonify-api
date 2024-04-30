@@ -1,11 +1,15 @@
 using Harmonify.Data;
 using Harmonify.Handlers;
+using Harmonify.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
+
+builder.Services.AddSingleton<IGameService, GameService>();
+builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -28,8 +32,3 @@ app.UseExceptionHandler(_ => { });
 app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-  public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

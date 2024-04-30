@@ -1,8 +1,8 @@
 namespace Harmonify.Models
 {
-  public class CreatedRoomDto
+  public class CreatedGameDto
   {
-    public required string RoomId { get; set; }
+    public required string GameId { get; set; }
     public required string HostGuid { get; set; }
   }
 }
