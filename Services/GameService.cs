@@ -9,7 +9,7 @@ namespace Harmonify.Services
     readonly IGameRepository gameRepository = gameRepository;
     readonly IPlayerRepository playerRepository = playerRepository;
 
-    public Player AddNewPlayer(Game game)
+    public Player CreateAndAddNewPlayer(Game game)
     {
       var player = playerRepository.Create();
       game.Players.Add(player);

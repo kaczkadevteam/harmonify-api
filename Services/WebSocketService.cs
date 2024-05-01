@@ -12,20 +12,22 @@ namespace Harmonify.Services
     private readonly IGameService gameService = gameService;
     private readonly List<WebSocketConnection> webSocketConnections = [];
 
-    public async Task StartConnection(WebSocket webSocket, Game game)
+    public async Task StartConnection(
+      WebSocket webSocket,
+      string gameId,
+      string playerGuid,
+      Response<object> firstMessage
+    )
     {
-      var playerGuid = gameService.AddNewPlayer(game).Guid;
-
       var connection = new WebSocketConnection
       {
         WS = webSocket,
         PlayerGuid = playerGuid,
-        GameId = game.Id
+        GameId = gameId
       };
       webSocketConnections.Add(connection);
 
-      var response = new Response<string> { Type = ResponseType.NewPlayer, Data = playerGuid };
-      await SendMessage(connection.WS, response);
+      await SendMessage(connection.WS, firstMessage);
       await ListenForMessages(connection);
     }
 

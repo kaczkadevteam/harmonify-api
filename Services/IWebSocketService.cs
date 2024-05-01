@@ -6,7 +6,12 @@ namespace Harmonify.Services
 {
   public interface IWebSocketService
   {
-    public Task StartConnection(WebSocket webSocket, Game game);
+    public Task StartConnection(
+      WebSocket webSocket,
+      string gameId,
+      string playerGuid,
+      Response<object> firstMessage
+    );
     public Task Reconnect(WebSocketConnection connection, WebSocket webSocket);
     public bool TryGetExistingConnection(
       string playerGuid,

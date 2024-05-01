@@ -3,7 +3,7 @@ namespace Harmonify.Responses
   public enum ResponseType
   {
     Acknowledged,
-    CreatedRoom,
+    CreatedGame,
     NewPlayer,
     Reconnected,
     ConnectionClosed,

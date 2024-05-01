@@ -9,27 +9,36 @@ namespace Harmonify.Controllers
 {
   [ApiController]
   public class GameController(
+    IGameService gameService,
     IGameRepository gameRepository,
     IPlayerRepository playerRepository,
     IWebSocketService webSocketService
   ) : ControllerBase
   {
+    readonly IGameService gameService = gameService;
     readonly IGameRepository gameRepository = gameRepository;
     readonly IPlayerRepository playerRepository = playerRepository;
 
-    [HttpPost("create")]
-    public ActionResult CreateGame()
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [Route("create")]
+    public async Task CreateGame()
     {
+      if (!HttpContext.WebSockets.IsWebSocketRequest)
+      {
+        await RespondNotWebSocketConnection();
+        return;
+      }
+
       var player = playerRepository.Create();
       var game = gameRepository.Create(player);
 
-      var createdGame = new Response<CreatedGameDto>
+      var createdGame = new Response<object>
       {
-        Type = ResponseType.CreatedRoom,
+        Type = ResponseType.CreatedGame,
         Data = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id }
       };
-
-      return Ok(createdGame);
+      using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+      await webSocketService.StartConnection(webSocket, game.Id, player.Guid, createdGame);
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
@@ -38,8 +47,7 @@ namespace Harmonify.Controllers
     {
       if (!HttpContext.WebSockets.IsWebSocketRequest)
       {
-        HttpContext.Response.StatusCode = 400;
-        await HttpContext.Response.WriteAsync("Not websocket request");
+        await RespondNotWebSocketConnection();
         return;
       }
 
@@ -51,14 +59,23 @@ namespace Harmonify.Controllers
         return;
       }
 
+      var playerGuid = gameService.CreateAndAddNewPlayer(game).Guid;
+      var response = new Response<object> { Type = ResponseType.NewPlayer, Data = playerGuid };
+
       using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-      await webSocketService.StartConnection(webSocket, game);
+      await webSocketService.StartConnection(webSocket, game.Id, playerGuid, response);
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
     [Route("game/reconnect/{playerGuid}")]
     public async Task ReconnectPlayer(string playerGuid)
     {
+      if (!HttpContext.WebSockets.IsWebSocketRequest)
+      {
+        await RespondNotWebSocketConnection();
+        return;
+      }
+
       if (
         webSocketService.TryGetExistingConnection(
           playerGuid,
@@ -87,6 +104,13 @@ namespace Harmonify.Controllers
         Data = webSocketService.GetWsConnections()
       };
       return Ok(response);
+    }
+
+    private async Task RespondNotWebSocketConnection()
+    {
+      HttpContext.Response.StatusCode = 426;
+      HttpContext.Response.Headers.Append("Upgrade", "websocket");
+      await HttpContext.Response.WriteAsync("Not websocket request");
     }
   }
 }
