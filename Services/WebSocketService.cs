@@ -29,6 +29,50 @@ namespace Harmonify.Services
       await ListenForMessages(connection);
     }
 
+    public bool TryGetExistingConnection(
+      string playerGuid,
+      out WebSocketConnection? connection,
+      out ResponseError<string>? response,
+      out int statusCode
+    )
+    {
+      connection = webSocketConnections.Find((conn) => conn.PlayerGuid == playerGuid);
+
+      if (connection == null)
+      {
+        response = new ResponseError<string>
+        {
+          Type = ResponseType.NoPlayerInGame,
+          ErrorMessage = "This player is not connected to any game"
+        };
+        statusCode = 404;
+        return false;
+      }
+
+      if (connection.WS.State != WebSocketState.Closed)
+      {
+        response = new ResponseError<string>
+        {
+          Type = ResponseType.NoPlayerInGame,
+          ErrorMessage = "This player is already connected"
+        };
+        statusCode = 409;
+        return false;
+      }
+
+      response = null;
+      statusCode = 200;
+      return true;
+    }
+
+    public async Task Reconnect(WebSocketConnection connection, WebSocket ws)
+    {
+      connection.WS = ws;
+      var response = new Response<string> { Type = ResponseType.Reconnected };
+      await SendMessage(connection.WS, response);
+      await ListenForMessages(connection);
+    }
+
     public string GetWsConnections()
     {
       string data = "";
@@ -147,16 +191,13 @@ namespace Harmonify.Services
       {
         await CloseSafely(connection.WS);
 
-        /**
-        * If there is no connected player in game, remove it
-        */
-        if (
-          !webSocketConnections.Exists(
-            (searchedConnection) =>
-              searchedConnection.WS.State != WebSocketState.Closed
-              && searchedConnection.GameId == connection.GameId
-          )
-        )
+        var isAnyPlayerConnected = webSocketConnections.Exists(
+          (searchedConnection) =>
+            searchedConnection.WS.State != WebSocketState.Closed
+            && searchedConnection.GameId == connection.GameId
+        );
+
+        if (!isAnyPlayerConnected)
         {
           webSocketConnections.RemoveAll((conn) => conn.GameId == connection.GameId);
           gameService.RemoveGame(connection.GameId);

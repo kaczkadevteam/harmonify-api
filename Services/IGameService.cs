@@ -6,5 +6,6 @@ namespace Harmonify.Services
   {
     public Player AddNewPlayer(Game game);
     public void RemoveGame(string id);
+    public void HandlePlayerReconnect(string playerGuid, string gameId);
   }
 }

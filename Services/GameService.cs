@@ -16,6 +16,11 @@ namespace Harmonify.Services
       return player;
     }
 
+    public void HandlePlayerReconnect(string playerGuid, string gameId)
+    {
+      throw new NotImplementedException();
+    }
+
     public void RemoveGame(string id)
     {
       gameRepository.RemoveGame(id);

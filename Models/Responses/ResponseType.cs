@@ -5,6 +5,7 @@ namespace Harmonify.Responses
     Acknowledged,
     CreatedRoom,
     NewPlayer,
+    Reconnected,
     ConnectionClosed,
     EndGame,
     ConnectionsList,

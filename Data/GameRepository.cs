@@ -16,7 +16,7 @@ namespace Harmonify.Data
       {
         Host = host,
         Id = nextGameId.ToString(),
-        Players = new List<Player>()
+        Players = [host]
       };
       games.Add(game);
 

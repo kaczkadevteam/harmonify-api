@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Harmonify.Data;
 using Harmonify.Responses;
 using Harmonify.Services;
@@ -50,34 +51,31 @@ namespace Harmonify.Controllers
         return;
       }
 
-      var playerGuid = HttpContext.Request.Query["reconnect"];
-      if (playerGuid != StringValues.Empty)
-      {
-        //TODO: Verify if this player isn't already in the game
-        if (game.Host.Guid == playerGuid)
-        {
-          throw new NotImplementedException("Reconnect host");
-        }
-        //TODO: Verify if this player isn't already in the game
-        else if (game.Players.Any(player => player.Guid == playerGuid))
-        {
-          throw new NotImplementedException("Reconnect player");
-        }
-        else
-        {
-          //FIXME: Isn't there better status to represent this error?
-          HttpContext.Response.StatusCode = 400;
-          var response = new ResponseError<object>
-          {
-            Type = ResponseType.NoPlayerInGame,
-            ErrorMessage = "Couldn't find this player in this game"
-          };
-          await HttpContext.Response.WriteAsJsonAsync(response);
-        }
-      }
-
       using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
       await webSocketService.StartConnection(webSocket, game);
+    }
+
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [Route("game/reconnect/{playerGuid}")]
+    public async Task ReconnectPlayer(string playerGuid)
+    {
+      if (
+        webSocketService.TryGetExistingConnection(
+          playerGuid,
+          out var connection,
+          out var response,
+          out var statusCode
+        )
+      )
+      {
+        using var newWebSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        await webSocketService.Reconnect(connection!, newWebSocket);
+      }
+      else
+      {
+        HttpContext.Response.StatusCode = statusCode;
+        await HttpContext.Response.WriteAsJsonAsync(response);
+      }
     }
 
     [HttpGet("game/ws")]
