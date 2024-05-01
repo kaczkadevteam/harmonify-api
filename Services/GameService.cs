@@ -3,17 +3,13 @@ using Harmonify.Models;
 
 namespace Harmonify.Services
 {
-  public class GameService(IGameRepository gameRepository, IPlayerRepository playerRepository)
-    : IGameService
+  public class GameService(IGameRepository gameRepository) : IGameService
   {
     readonly IGameRepository gameRepository = gameRepository;
-    readonly IPlayerRepository playerRepository = playerRepository;
 
-    public Player CreateAndAddNewPlayer(Game game)
+    public void AddPlayer(string id, Player player)
     {
-      var player = playerRepository.Create();
-      game.Players.Add(player);
-      return player;
+      gameRepository.GetGame(id)?.Players.Add(player);
     }
 
     public void HandlePlayerReconnect(string playerGuid, string gameId)

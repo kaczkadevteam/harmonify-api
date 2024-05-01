@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using Harmonify.Data;
+using Harmonify.Models;
 using Harmonify.Responses;
 using Harmonify.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -11,13 +11,11 @@ namespace Harmonify.Controllers
   public class GameController(
     IGameService gameService,
     IGameRepository gameRepository,
-    IPlayerRepository playerRepository,
     IWebSocketService webSocketService
   ) : ControllerBase
   {
     readonly IGameService gameService = gameService;
     readonly IGameRepository gameRepository = gameRepository;
-    readonly IPlayerRepository playerRepository = playerRepository;
 
     [ApiExplorerSettings(IgnoreApi = true)]
     [Route("create")]
@@ -29,7 +27,7 @@ namespace Harmonify.Controllers
         return;
       }
 
-      var player = playerRepository.Create();
+      var player = new Player();
       var game = gameRepository.Create(player);
 
       var createdGame = new Response<object>
@@ -59,11 +57,13 @@ namespace Harmonify.Controllers
         return;
       }
 
-      var playerGuid = gameService.CreateAndAddNewPlayer(game).Guid;
-      var response = new Response<object> { Type = ResponseType.NewPlayer, Data = playerGuid };
+      var player = new Player();
+      gameService.AddPlayer(id, player);
+
+      var response = new Response<object> { Type = ResponseType.NewPlayer, Data = player.Guid };
 
       using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-      await webSocketService.StartConnection(webSocket, game.Id, playerGuid, response);
+      await webSocketService.StartConnection(webSocket, game.Id, player.Guid, response);
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
