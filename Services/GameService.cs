@@ -1,54 +1,53 @@
 using Harmonify.Data;
 using Harmonify.Models;
 
-namespace Harmonify.Services
+namespace Harmonify.Services;
+
+public class GameService(IGameRepository gameRepository) : IGameService
 {
-  public class GameService(IGameRepository gameRepository) : IGameService
+  private const int minGameIdNumber = 1000;
+  private const int maxGameIdNumber = 10_000;
+  private int nextGameId = 1000;
+
+  public Game Create(Player host)
   {
-    private const int minGameIdNumber = 1000;
-    private const int maxGameIdNumber = 10_000;
-    private int nextGameId = 1000;
-
-    public Game Create(Player host)
+    var game = new Game
     {
-      var game = new Game
-      {
-        Host = host,
-        Id = nextGameId.ToString(),
-        Players = [host]
-      };
-      gameRepository.Add(game);
+      Host = host,
+      Id = nextGameId.ToString(),
+      Players = [host]
+    };
+    gameRepository.Add(game);
 
-      if (nextGameId >= maxGameIdNumber)
-      {
-        nextGameId = minGameIdNumber;
-      }
-      else
-      {
-        nextGameId++;
-      }
-
-      return game;
+    if (nextGameId >= maxGameIdNumber)
+    {
+      nextGameId = minGameIdNumber;
+    }
+    else
+    {
+      nextGameId++;
     }
 
-    public bool GameExists(string id)
-    {
-      return gameRepository.GameExists(id);
-    }
+    return game;
+  }
 
-    public void AddPlayer(string id, Player player)
-    {
-      gameRepository.GetGame(id)?.Players.Add(player);
-    }
+  public bool GameExists(string id)
+  {
+    return gameRepository.GameExists(id);
+  }
 
-    public void HandlePlayerReconnect(string playerGuid, string gameId)
-    {
-      throw new NotImplementedException();
-    }
+  public void AddPlayer(string id, Player player)
+  {
+    gameRepository.GetGame(id)?.Players.Add(player);
+  }
 
-    public void RemoveGame(string id)
-    {
-      gameRepository.RemoveGame(id);
-    }
+  public void HandlePlayerReconnect(string playerGuid, string gameId)
+  {
+    throw new NotImplementedException();
+  }
+
+  public void RemoveGame(string id)
+  {
+    gameRepository.RemoveGame(id);
   }
 }

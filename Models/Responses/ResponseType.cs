@@ -1,19 +1,18 @@
-namespace Harmonify.Responses
-{
-  public enum ResponseType
-  {
-    Acknowledged,
-    CreatedGame,
-    NewPlayer,
-    Reconnected,
-    ConnectionClosed,
-    EndGame,
-    ConnectionsList,
+namespace Harmonify.Responses;
 
-    //------ERRORS---------
-    NoPlayerInGame,
-    GameDoesntExist,
-    IncorrectFormat,
-    UnknownError,
-  }
+public enum ResponseType
+{
+  Acknowledged,
+  CreatedGame,
+  NewPlayer,
+  Reconnected,
+  ConnectionClosed,
+  EndGame,
+  ConnectionsList,
+
+  //------ERRORS---------
+  NoPlayerInGame,
+  GameDoesntExist,
+  IncorrectFormat,
+  UnknownError,
 }
