@@ -8,14 +8,10 @@ using Microsoft.Extensions.Primitives;
 namespace Harmonify.Controllers
 {
   [ApiController]
-  public class GameController(
-    IGameService gameService,
-    IGameRepository gameRepository,
-    IWebSocketService webSocketService
-  ) : ControllerBase
+  public class GameController(IGameService gameService, IWebSocketService webSocketService)
+    : ControllerBase
   {
     readonly IGameService gameService = gameService;
-    readonly IGameRepository gameRepository = gameRepository;
 
     [ApiExplorerSettings(IgnoreApi = true)]
     [Route("create")]
@@ -28,7 +24,7 @@ namespace Harmonify.Controllers
       }
 
       var player = new Player();
-      var game = gameRepository.Create(player);
+      var game = gameService.Create(player);
 
       var createdGame = new Response<object>
       {
@@ -49,11 +45,16 @@ namespace Harmonify.Controllers
         return;
       }
 
-      var game = gameRepository.GetGame(id);
-      if (game == null)
+      if (!gameService.GameExists(id))
       {
         HttpContext.Response.StatusCode = 404;
-        await HttpContext.Response.WriteAsync("Game not found");
+        await HttpContext.Response.WriteAsJsonAsync(
+          new ResponseError<string>
+          {
+            Type = ResponseType.GameDoesntExist,
+            ErrorMessage = "Game not found"
+          }
+        );
         return;
       }
 
@@ -61,9 +62,8 @@ namespace Harmonify.Controllers
       gameService.AddPlayer(id, player);
 
       var response = new Response<object> { Type = ResponseType.NewPlayer, Data = player.Guid };
-
       using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-      await webSocketService.StartConnection(webSocket, game.Id, player.Guid, response);
+      await webSocketService.StartConnection(webSocket, id, player.Guid, response);
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]

@@ -4,8 +4,9 @@ namespace Harmonify.Data
 {
   public interface IGameRepository
   {
-    Game Create(Player host);
+    void Add(Game game);
     List<Game> GetGames();
+    bool GameExists(string id);
     Game? GetGame(string id);
     void RemoveGame(string id);
   }

@@ -12,6 +12,7 @@ namespace Harmonify.Responses
 
     //------ERRORS---------
     NoPlayerInGame,
+    GameDoesntExist,
     IncorrectFormat,
     UnknownError,
   }

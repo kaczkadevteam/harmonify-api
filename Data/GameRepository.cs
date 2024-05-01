@@ -6,35 +6,19 @@ namespace Harmonify.Data
   {
     private readonly List<Game> games = [];
 
-    private const int minGameIdNumber = 1000;
-    private const int maxGameIdNumber = 10_000;
-    private int nextGameId = 1000;
-
-    public Game Create(Player host)
+    public void Add(Game game)
     {
-      var game = new Game
-      {
-        Host = host,
-        Id = nextGameId.ToString(),
-        Players = [host]
-      };
       games.Add(game);
-
-      if (nextGameId >= maxGameIdNumber)
-      {
-        nextGameId = minGameIdNumber;
-      }
-      else
-      {
-        nextGameId++;
-      }
-
-      return game;
     }
 
     public List<Game> GetGames()
     {
       return games;
+    }
+
+    public bool GameExists(string id)
+    {
+      return games.Exists((g) => g.Id == id);
     }
 
     public Game? GetGame(string id)
