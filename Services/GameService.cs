@@ -5,8 +5,6 @@ namespace Harmonify.Services
 {
   public class GameService(IGameRepository gameRepository) : IGameService
   {
-    readonly IGameRepository gameRepository = gameRepository;
-
     private const int minGameIdNumber = 1000;
     private const int maxGameIdNumber = 10_000;
     private int nextGameId = 1000;

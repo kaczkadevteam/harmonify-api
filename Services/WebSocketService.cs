@@ -9,7 +9,6 @@ namespace Harmonify.Services
 {
   public class WebSocketService(IGameService gameService) : IWebSocketService
   {
-    private readonly IGameService gameService = gameService;
     private readonly List<WebSocketConnection> webSocketConnections = [];
 
     public async Task StartConnection(

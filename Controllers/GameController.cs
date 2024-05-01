@@ -11,8 +11,6 @@ namespace Harmonify.Controllers
   public class GameController(IGameService gameService, IWebSocketService webSocketService)
     : ControllerBase
   {
-    readonly IGameService gameService = gameService;
-
     [ApiExplorerSettings(IgnoreApi = true)]
     [Route("create")]
     public async Task CreateGame()
