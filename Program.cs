@@ -13,7 +13,6 @@ builder
       .jsonOptions
       .PropertyNamingPolicy;
   });
-builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
 
 builder.Services.AddSingleton<IGameService, GameService>();

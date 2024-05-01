@@ -1,7 +1,6 @@
-namespace Harmonify.Responses
+namespace Harmonify.Responses;
+
+public class ResponseError<T> : Response<T>
 {
-  public class ResponseError<T> : Response<T>
-  {
-    public required string ErrorMessage { get; set; }
-  }
+  public required string ErrorMessage { get; set; }
 }

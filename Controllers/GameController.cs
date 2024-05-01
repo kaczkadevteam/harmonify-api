@@ -1,94 +1,113 @@
 using Harmonify.Data;
+using Harmonify.Models;
 using Harmonify.Responses;
 using Harmonify.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
-namespace Harmonify.Controllers
+namespace Harmonify.Controllers;
+
+[ApiController]
+public class GameController(IGameService gameService, IWebSocketService webSocketService)
+  : ControllerBase
 {
-  [ApiController]
-  public class GameController(
-    IGameRepository gameRepository,
-    IPlayerRepository playerRepository,
-    IWebSocketService webSocketService
-  ) : ControllerBase
+  [ApiExplorerSettings(IgnoreApi = true)]
+  [Route("create")]
+  public async Task CreateGame()
   {
-    readonly IGameRepository gameRepository = gameRepository;
-    readonly IPlayerRepository playerRepository = playerRepository;
-
-    [HttpPost("create")]
-    public ActionResult CreateGame()
+    if (!HttpContext.WebSockets.IsWebSocketRequest)
     {
-      var player = playerRepository.Create();
-      var game = gameRepository.Create(player);
-
-      var createdGame = new Response<CreatedGameDto>
-      {
-        Type = ResponseType.CreatedRoom,
-        Data = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id }
-      };
-
-      return Ok(createdGame);
+      await RespondNotWebSocketConnection();
+      return;
     }
 
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [Route("game/{id}")]
-    public async Task JoinGame(string id)
+    var player = new Player();
+    var game = gameService.Create(player);
+
+    var createdGame = new Response<object>
     {
-      if (!HttpContext.WebSockets.IsWebSocketRequest)
-      {
-        HttpContext.Response.StatusCode = 400;
-        await HttpContext.Response.WriteAsync("Not websocket request");
-        return;
-      }
+      Type = ResponseType.CreatedGame,
+      Data = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id }
+    };
+    using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+    await webSocketService.StartConnection(webSocket, game.Id, player.Guid, createdGame);
+  }
 
-      var game = gameRepository.GetGame(id);
-      if (game == null)
-      {
-        HttpContext.Response.StatusCode = 404;
-        await HttpContext.Response.WriteAsync("Game not found");
-        return;
-      }
-
-      var playerGuid = HttpContext.Request.Query["reconnect"];
-      if (playerGuid != StringValues.Empty)
-      {
-        //TODO: Verify if this player isn't already in the game
-        if (game.Host.Guid == playerGuid)
-        {
-          throw new NotImplementedException("Reconnect host");
-        }
-        //TODO: Verify if this player isn't already in the game
-        else if (game.Players.Any(player => player.Guid == playerGuid))
-        {
-          throw new NotImplementedException("Reconnect player");
-        }
-        else
-        {
-          //FIXME: Isn't there better status to represent this error?
-          HttpContext.Response.StatusCode = 400;
-          var response = new ResponseError<object>
-          {
-            Type = ResponseType.NoPlayerInGame,
-            ErrorMessage = "Couldn't find this player in this game"
-          };
-          await HttpContext.Response.WriteAsJsonAsync(response);
-        }
-      }
-
-      using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-      await webSocketService.StartConnection(webSocket, game);
+  [ApiExplorerSettings(IgnoreApi = true)]
+  [Route("game/{id}")]
+  public async Task JoinGame(string id)
+  {
+    if (!HttpContext.WebSockets.IsWebSocketRequest)
+    {
+      await RespondNotWebSocketConnection();
+      return;
     }
 
-    [HttpGet("game/ws")]
-    public IActionResult GetWsConnections()
+    if (!gameService.GameExists(id))
     {
-      var response = new Response<string>
-      {
-        Type = ResponseType.ConnectionsList,
-        Data = webSocketService.GetWsConnections()
-      };
-      return Ok(response);
+      HttpContext.Response.StatusCode = 404;
+      await HttpContext.Response.WriteAsJsonAsync(
+        new ResponseError<string>
+        {
+          Type = ResponseType.GameDoesntExist,
+          ErrorMessage = "Game not found"
+        }
+      );
+      return;
     }
+
+    var player = new Player();
+    gameService.AddPlayer(id, player);
+
+    var response = new Response<object> { Type = ResponseType.NewPlayer, Data = player.Guid };
+    using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+    await webSocketService.StartConnection(webSocket, id, player.Guid, response);
+  }
+
+  [ApiExplorerSettings(IgnoreApi = true)]
+  [Route("game/reconnect/{playerGuid}")]
+  public async Task ReconnectPlayer(string playerGuid)
+  {
+    if (!HttpContext.WebSockets.IsWebSocketRequest)
+    {
+      await RespondNotWebSocketConnection();
+      return;
+    }
+
+    if (
+      webSocketService.TryGetExistingConnection(
+        playerGuid,
+        out var connection,
+        out var response,
+        out var statusCode
+      )
+    )
+    {
+      using var newWebSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+      await webSocketService.Reconnect(connection!, newWebSocket);
+    }
+    else
+    {
+      HttpContext.Response.StatusCode = statusCode;
+      await HttpContext.Response.WriteAsJsonAsync(response);
+    }
+  }
+
+  [HttpGet("game/ws")]
+  public IActionResult GetWsConnections()
+  {
+    var response = new Response<string>
+    {
+      Type = ResponseType.ConnectionsList,
+      Data = webSocketService.GetWsConnections()
+    };
+    return Ok(response);
+  }
+
+  private async Task RespondNotWebSocketConnection()
+  {
+    HttpContext.Response.StatusCode = 426;
+    HttpContext.Response.Headers.Append("Upgrade", "websocket");
+    await HttpContext.Response.WriteAsync("Not websocket request");
   }
 }

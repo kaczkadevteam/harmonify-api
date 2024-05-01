@@ -5,158 +5,211 @@ using Harmonify.Handlers;
 using Harmonify.Models;
 using Harmonify.Responses;
 
-namespace Harmonify.Services
+namespace Harmonify.Services;
+
+public class WebSocketService(IGameService gameService) : IWebSocketService
 {
-  public class WebSocketService(IGameService gameService) : IWebSocketService
+  private readonly List<WebSocketConnection> webSocketConnections = [];
+
+  public async Task StartConnection(
+    WebSocket webSocket,
+    string gameId,
+    string playerGuid,
+    Response<object> firstMessage
+  )
   {
-    private readonly IGameService gameService = gameService;
-    private readonly List<WebSocketConnection> webSocketConnections = [];
-
-    public async Task StartConnection(WebSocket webSocket, Game game)
+    var connection = new WebSocketConnection
     {
-      var playerGuid = gameService.AddNewPlayer(game).Guid;
+      WS = webSocket,
+      PlayerGuid = playerGuid,
+      GameId = gameId
+    };
+    webSocketConnections.Add(connection);
 
-      var connection = new WebSocketConnection
+    await SendMessage(connection.WS, firstMessage);
+    await ListenForMessages(connection);
+  }
+
+  public bool TryGetExistingConnection(
+    string playerGuid,
+    out WebSocketConnection? connection,
+    out ResponseError<string>? response,
+    out int statusCode
+  )
+  {
+    connection = webSocketConnections.Find((conn) => conn.PlayerGuid == playerGuid);
+
+    if (connection == null)
+    {
+      response = new ResponseError<string>
       {
-        WS = webSocket,
-        PlayerGuid = playerGuid,
-        GameId = game.Id
+        Type = ResponseType.NoPlayerInGame,
+        ErrorMessage = "This player is not connected to any game"
       };
-      webSocketConnections.Add(connection);
-
-      var response = new Response<string> { Type = ResponseType.NewPlayer, Data = playerGuid };
-      await SendMessage(connection.WS, response);
-      await ListenForMessages(connection);
+      statusCode = 404;
+      return false;
     }
 
-    public string GetWsConnections()
+    if (connection.WS.State != WebSocketState.Closed)
     {
-      string data = "";
-      foreach (var item in webSocketConnections)
+      response = new ResponseError<string>
       {
-        data = data + "{" + item.ToString() + "}\n\n";
-      }
-      return data;
+        Type = ResponseType.NoPlayerInGame,
+        ErrorMessage = "This player is already connected"
+      };
+      statusCode = 409;
+      return false;
     }
 
-    public async Task ListenForMessages(WebSocketConnection connection)
+    response = null;
+    statusCode = 200;
+    return true;
+  }
+
+  public async Task Reconnect(WebSocketConnection connection, WebSocket ws)
+  {
+    connection.WS = ws;
+    var response = new Response<string> { Type = ResponseType.Reconnected };
+    await SendMessage(connection.WS, response);
+    await ListenForMessages(connection);
+  }
+
+  public string GetWsConnections()
+  {
+    string data = "";
+    foreach (var item in webSocketConnections)
     {
-      while (true)
+      data = data + "{" + item.ToString() + "}\n\n";
+    }
+    return data;
+  }
+
+  public async Task ListenForMessages(WebSocketConnection connection)
+  {
+    while (true)
+    {
+      var message = await ReadMessage(connection);
+
+      if (message == null)
       {
-        var message = await ReadMessage(connection);
-
-        if (message == null)
-        {
-          continue;
-        }
-
-        if (message.Type == ResponseType.ConnectionClosed)
-        {
-          break;
-        }
-
-        if (message is ResponseError<object>)
-        {
-          await SendMessage(connection.WS, message);
-        }
-        else if (message.Type == ResponseType.EndGame)
-        {
-          await EndGame(connection.GameId);
-          break;
-        }
-        else
-        {
-          await SendToOtherPlayers(connection.PlayerGuid, connection.GameId, message);
-
-          var response = new Response<string>
-          {
-            Type = ResponseType.Acknowledged,
-            Data = "Message delivered"
-          };
-          await SendMessage(connection.WS, response);
-        }
+        continue;
       }
 
-      if (connection.WS.State != WebSocketState.Closed)
+      if (message.Type == ResponseType.ConnectionClosed)
       {
-        await connection.WS.CloseAsync(
-          WebSocketCloseStatus.NormalClosure,
-          "Disconnected",
-          CancellationToken.None
-        );
-        //TODO: Probably shouldn't remove if we plan to support reconnecting
-        webSocketConnections.Remove(connection);
+        break;
       }
-    }
 
-    public async Task EndGame(string gameId)
-    {
-      await Task.WhenAll(
-        webSocketConnections
-          .FindAll((connection) => connection.GameId == gameId)
-          .Select(
-            async (connection) =>
-            {
-              await connection.WS.CloseAsync(
-                WebSocketCloseStatus.NormalClosure,
-                "Game finished",
-                CancellationToken.None
-              );
-            }
-          )
-      );
-
-      webSocketConnections.RemoveAll((connection) => connection.GameId == gameId);
-    }
-
-    public async Task SendToPlayer(string playerGuid, string gameId, object message)
-    {
-      var connection = webSocketConnections.Find(
-        (connection) => connection.PlayerGuid == playerGuid && connection.GameId == gameId
-      );
-
-      if (connection == null)
+      if (message is ResponseError<object>)
       {
+        await SendMessage(connection.WS, message);
+      }
+      else if (message.Type == ResponseType.EndGame)
+      {
+        await EndGame(connection.GameId);
         return;
       }
+      else
+      {
+        await SendToOtherPlayers(connection.PlayerGuid, connection.GameId, message);
 
-      await SendMessage(connection.WS, message);
+        var response = new Response<string>
+        {
+          Type = ResponseType.Acknowledged,
+          Data = "Message delivered"
+        };
+        await SendMessage(connection.WS, response);
+      }
     }
 
-    public async Task SendToAllPlayers(string gameId, object message)
+    await HandleDisconnectFromClient(connection);
+  }
+
+  public async Task EndGame(string gameId)
+  {
+    await Task.WhenAll(
+      webSocketConnections
+        .FindAll((connection) => connection.GameId == gameId)
+        .Select(
+          async (connection) =>
+          {
+            await CloseSafely(connection.WS, "Game finished");
+          }
+        )
+    );
+
+    webSocketConnections.RemoveAll((connection) => connection.GameId == gameId);
+    gameService.RemoveGame(gameId);
+  }
+
+  public async Task SendToPlayer(string playerGuid, string gameId, object message)
+  {
+    var connection = webSocketConnections.Find(
+      (connection) => connection.PlayerGuid == playerGuid && connection.GameId == gameId
+    );
+
+    if (connection == null)
     {
-      await Task.WhenAll(
-        webSocketConnections
-          .FindAll((connection) => connection.GameId == gameId)
-          .Select(
-            async (connection) =>
-            {
-              await SendMessage(connection.WS, message);
-            }
-          )
+      return;
+    }
+
+    await SendMessage(connection.WS, message);
+  }
+
+  public async Task SendToAllPlayers(string gameId, object message)
+  {
+    await Task.WhenAll(
+      webSocketConnections
+        .FindAll((connection) => connection.GameId == gameId)
+        .Select(
+          async (connection) =>
+          {
+            await SendMessage(connection.WS, message);
+          }
+        )
+    );
+  }
+
+  public async Task SendToOtherPlayers(string senderGuid, string gameId, object message)
+  {
+    await Task.WhenAll(
+      webSocketConnections
+        .FindAll((connection) => connection.PlayerGuid != senderGuid && connection.GameId == gameId)
+        .Select(
+          async (connection) =>
+          {
+            await SendMessage(connection.WS, message);
+          }
+        )
+    );
+  }
+
+  private async Task HandleDisconnectFromClient(WebSocketConnection connection)
+  {
+    if (connection.WS.State != WebSocketState.Closed)
+    {
+      await CloseSafely(connection.WS);
+
+      var isAnyPlayerConnected = webSocketConnections.Exists(
+        (searchedConnection) =>
+          searchedConnection.WS.State != WebSocketState.Closed
+          && searchedConnection.GameId == connection.GameId
       );
-    }
 
-    public async Task SendToOtherPlayers(string senderGuid, string gameId, object message)
-    {
-      await Task.WhenAll(
-        webSocketConnections
-          .FindAll(
-            (connection) => connection.PlayerGuid != senderGuid && connection.GameId == gameId
-          )
-          .Select(
-            async (connection) =>
-            {
-              await SendMessage(connection.WS, message);
-            }
-          )
-      );
+      if (!isAnyPlayerConnected)
+      {
+        webSocketConnections.RemoveAll((conn) => conn.GameId == connection.GameId);
+        gameService.RemoveGame(connection.GameId);
+      }
     }
+  }
 
-    private static async Task SendMessage(WebSocket webSocket, object message)
+  private static async Task SendMessage(WebSocket webSocket, object message)
+  {
+    byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, JsonHandler.jsonOptions);
+
+    if (webSocket.State != WebSocketState.Closed)
     {
-      byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, JsonHandler.jsonOptions);
-      //TODO: Check if isn't closed
       await webSocket.SendAsync(
         new ArraySegment<byte>(jsonBytes),
         WebSocketMessageType.Text,
@@ -164,38 +217,50 @@ namespace Harmonify.Services
         CancellationToken.None
       );
     }
+  }
 
-    private static async Task<Response<object?>?> ReadMessage(WebSocketConnection connection)
+  private static async Task<Response<object?>?> ReadMessage(WebSocketConnection connection)
+  {
+    var receiveResult = await connection.WS.ReceiveAsync(
+      new ArraySegment<byte>(connection.Buffer),
+      CancellationToken.None
+    );
+
+    if (receiveResult.CloseStatus.HasValue)
     {
-      var receiveResult = await connection.WS.ReceiveAsync(
-        new ArraySegment<byte>(connection.Buffer),
+      return new Response<object?> { Type = ResponseType.ConnectionClosed };
+    }
+
+    var jsonString = Encoding.UTF8.GetString(connection.Buffer);
+    jsonString = jsonString.Replace("\0", string.Empty);
+    Array.Clear(connection.Buffer);
+
+    try
+    {
+      return JsonSerializer.Deserialize<Response<object?>>(
+        jsonString.Trim(),
+        JsonHandler.jsonOptions
+      );
+    }
+    catch (Exception)
+    {
+      return new ResponseError<object?>
+      {
+        Type = ResponseType.IncorrectFormat,
+        ErrorMessage = "Incorrect message format"
+      };
+    }
+  }
+
+  private static async Task CloseSafely(WebSocket webSocket, string message = "Disconnected")
+  {
+    if (webSocket.State != WebSocketState.Closed)
+    {
+      await webSocket.CloseAsync(
+        WebSocketCloseStatus.NormalClosure,
+        "Game finished",
         CancellationToken.None
       );
-
-      if (receiveResult.CloseStatus.HasValue)
-      {
-        return new Response<object?> { Type = ResponseType.ConnectionClosed };
-      }
-
-      var jsonString = Encoding.UTF8.GetString(connection.Buffer);
-      jsonString = jsonString.Replace("\0", string.Empty);
-      Array.Clear(connection.Buffer);
-
-      try
-      {
-        return JsonSerializer.Deserialize<Response<object?>>(
-          jsonString.Trim(),
-          JsonHandler.jsonOptions
-        );
-      }
-      catch (Exception)
-      {
-        return new ResponseError<object?>
-        {
-          Type = ResponseType.IncorrectFormat,
-          ErrorMessage = "Incorrect message format"
-        };
-      }
     }
   }
 }
