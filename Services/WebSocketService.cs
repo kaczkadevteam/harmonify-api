@@ -95,7 +95,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
         continue;
       }
 
-      if (message.Type == ResponseType.ConnectionClosed)
+      if (message.Type == ResponseType.CloseConnection)
       {
         break;
       }
@@ -103,26 +103,59 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
       if (message is ResponseError<object>)
       {
         await SendMessage(connection.WS, message);
+        continue;
       }
-      else if (message.Type == ResponseType.EndGame)
+
+      if (!gameService.IsAuthorized(connection.GameId, connection.PlayerGuid, message.Type))
+      {
+        await SendMessage(
+          connection.WS,
+          new ResponseError<object?>
+          {
+            Type = ResponseType.Forbidden,
+            ErrorMessage = "Insufficient permissions to perform this action"
+          }
+        );
+        continue;
+      }
+
+      if (message.Type == ResponseType.EndGame)
       {
         await EndGame(connection.GameId);
         return;
       }
-      else
-      {
-        await SendToOtherPlayers(connection.PlayerGuid, connection.GameId, message);
 
-        var response = new Response<string>
-        {
-          Type = ResponseType.Acknowledged,
-          Data = "Message delivered"
-        };
-        await SendMessage(connection.WS, response);
-      }
+      await HandleIncomingMessage(connection, message);
     }
 
     await HandleDisconnectFromClient(connection);
+  }
+
+  public async Task HandleIncomingMessage(WebSocketConnection connection, Response<object?> message)
+  {
+    if (message.Type == ResponseType.StartGame)
+    {
+      if (gameService.TryStartGame(connection.GameId))
+      {
+        var response = new Response<GameStartedDto>
+        {
+          Type = ResponseType.GameStarted,
+          Data = new GameStartedDto { }
+        };
+
+        await SendToAllPlayers(connection.GameId, response);
+      }
+      else
+      {
+        var response = new ResponseError<object>
+        {
+          Type = ResponseType.IncorrectStageForMessage,
+          ErrorMessage = "Game is already running"
+        };
+
+        await SendMessage(connection.WS, response);
+      }
+    }
   }
 
   public async Task EndGame(string gameId)
@@ -228,7 +261,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
 
     if (receiveResult.CloseStatus.HasValue)
     {
-      return new Response<object?> { Type = ResponseType.ConnectionClosed };
+      return new Response<object?> { Type = ResponseType.CloseConnection };
     }
 
     var jsonString = Encoding.UTF8.GetString(connection.Buffer);

@@ -1,5 +1,6 @@
 using Harmonify.Data;
 using Harmonify.Models;
+using Harmonify.Responses;
 
 namespace Harmonify.Services;
 
@@ -36,6 +37,19 @@ public class GameService(IGameRepository gameRepository) : IGameService
     return gameRepository.GameExists(id);
   }
 
+  public bool TryStartGame(string id)
+  {
+    var game = gameRepository.GetGame(id);
+
+    if (game?.State != GameState.GameSetup)
+    {
+      return false;
+    }
+
+    game.State = GameState.RoundSetup;
+    return true;
+  }
+
   public void AddPlayer(string id, Player player)
   {
     gameRepository.GetGame(id)?.Players.Add(player);
@@ -49,5 +63,15 @@ public class GameService(IGameRepository gameRepository) : IGameService
   public void RemoveGame(string id)
   {
     gameRepository.RemoveGame(id);
+  }
+
+  public bool IsAuthorized(string gameId, string playerGuid, ResponseType messageType)
+  {
+    if (messageType == ResponseType.StartGame || messageType == ResponseType.EndGame)
+    {
+      return gameRepository.GetGame(gameId)?.Host.Guid == playerGuid;
+    }
+
+    return true;
   }
 }
