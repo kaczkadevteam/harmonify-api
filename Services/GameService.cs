@@ -1,6 +1,6 @@
 using Harmonify.Data;
+using Harmonify.Messages;
 using Harmonify.Models;
-using Harmonify.Responses;
 
 namespace Harmonify.Services;
 
@@ -65,9 +65,9 @@ public class GameService(IGameRepository gameRepository) : IGameService
     gameRepository.RemoveGame(id);
   }
 
-  public bool IsAuthorized(string gameId, string playerGuid, ResponseType messageType)
+  public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType)
   {
-    if (messageType == ResponseType.StartGame || messageType == ResponseType.EndGame)
+    if (messageType == MessageType.StartGame || messageType == MessageType.EndGame)
     {
       return gameRepository.GetGame(gameId)?.Host.Guid == playerGuid;
     }

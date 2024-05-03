@@ -1,6 +1,6 @@
 using System.Net.WebSockets;
+using Harmonify.Messages;
 using Harmonify.Models;
-using Harmonify.Responses;
 
 namespace Harmonify.Services;
 
@@ -10,13 +10,13 @@ public interface IWebSocketService
     WebSocket webSocket,
     string gameId,
     string playerGuid,
-    Response<object> firstMessage
+    Message firstMessage
   );
   public Task Reconnect(WebSocketConnection connection, WebSocket webSocket);
   public bool TryGetExistingConnection(
     string playerGuid,
     out WebSocketConnection? connection,
-    out ResponseError<string>? response,
+    out MessageError? response,
     out int statusCode
   );
   public string GetWsConnections();

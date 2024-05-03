@@ -1,6 +1,6 @@
 using Harmonify.Data;
+using Harmonify.Messages;
 using Harmonify.Models;
-using Harmonify.Responses;
 using Harmonify.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -24,9 +24,9 @@ public class GameController(IGameService gameService, IWebSocketService webSocke
     var player = new Player();
     var game = gameService.Create(player);
 
-    var createdGame = new Response<object>
+    var createdGame = new MessageWithData<CreatedGameDto>
     {
-      Type = ResponseType.CreatedGame,
+      Type = MessageType.CreatedGame,
       Data = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id }
     };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
@@ -47,11 +47,7 @@ public class GameController(IGameService gameService, IWebSocketService webSocke
     {
       HttpContext.Response.StatusCode = 404;
       await HttpContext.Response.WriteAsJsonAsync(
-        new ResponseError<string>
-        {
-          Type = ResponseType.GameDoesntExist,
-          ErrorMessage = "Game not found"
-        }
+        new MessageError { Type = MessageType.GameDoesntExist, ErrorMessage = "Game not found" }
       );
       return;
     }
@@ -59,7 +55,7 @@ public class GameController(IGameService gameService, IWebSocketService webSocke
     var player = new Player();
     gameService.AddPlayer(id, player);
 
-    var response = new Response<object> { Type = ResponseType.NewPlayer, Data = player.Guid };
+    var response = new MessageWithData<string> { Type = MessageType.NewPlayer, Data = player.Guid };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
     await webSocketService.StartConnection(webSocket, id, player.Guid, response);
   }
@@ -96,9 +92,9 @@ public class GameController(IGameService gameService, IWebSocketService webSocke
   [HttpGet("game/ws")]
   public IActionResult GetWsConnections()
   {
-    var response = new Response<string>
+    var response = new MessageWithData<string>
     {
-      Type = ResponseType.ConnectionsList,
+      Type = MessageType.ConnectionsList,
       Data = webSocketService.GetWsConnections()
     };
     return Ok(response);

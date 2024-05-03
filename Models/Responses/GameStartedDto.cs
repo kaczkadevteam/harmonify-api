@@ -1,3 +1,3 @@
-namespace Harmonify.Responses;
+namespace Harmonify.Messages;
 
 public class GameStartedDto { }

@@ -1,6 +1,6 @@
-namespace Harmonify.Responses;
+namespace Harmonify.Messages;
 
-public enum ResponseType
+public enum MessageType
 {
   //--------INCOMING-----------
   StartGame,
