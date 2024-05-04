@@ -134,12 +134,23 @@ public class WebSocketReceiverService(
   {
     if (message.Type == MessageType.StartGame)
     {
+      if (!(message is MessageWithData<string>))
+      {
+        Console.WriteLine(message);
+        var response = new MessageError
+        {
+          Type = MessageType.IncorrectFormat,
+          ErrorMessage = "Missing required data"
+        };
+        await WebSocketHelper.SendMessage(connection.WS, response);
+        return;
+      }
       if (gameService.TryStartGame(connection.GameId))
       {
         var response = new MessageWithData<GameStartedDto>
         {
           Type = MessageType.GameStarted,
-          Data = new GameStartedDto { }
+          Data = null
         };
 
         await sender.SendToAllPlayers(connection.GameId, response);
