@@ -54,7 +54,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
     {
       response = new MessageError
       {
-        Type = MessageType.NoPlayerInGame,
+        Type = MessageType.Conflict,
         ErrorMessage = "This player is already connected"
       };
       statusCode = 409;
@@ -108,14 +108,12 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
 
       if (!gameService.IsAuthorized(connection.GameId, connection.PlayerGuid, message.Type))
       {
-        await SendMessage(
-          connection.WS,
-          new MessageError
-          {
-            Type = MessageType.Forbidden,
-            ErrorMessage = "Insufficient permissions to perform this action"
-          }
-        );
+        var response = new MessageError
+        {
+          Type = MessageType.Forbidden,
+          ErrorMessage = "Insufficient permissions to perform this action"
+        };
+        await SendMessage(connection.WS, response);
         continue;
       }
 
@@ -149,7 +147,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
       {
         var response = new MessageError
         {
-          Type = MessageType.IncorrectStageForMessage,
+          Type = MessageType.Conflict,
           ErrorMessage = "Game is already running"
         };
 
