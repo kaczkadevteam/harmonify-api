@@ -1,5 +1,6 @@
 using Harmonify.Data;
 using Harmonify.Handlers;
+using Harmonify.Helpers;
 using Harmonify.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,8 +9,8 @@ builder
   .Services.AddControllers()
   .AddJsonOptions(options =>
   {
-    options.JsonSerializerOptions.Converters.Add(JsonHandler.enumConverter);
-    options.JsonSerializerOptions.PropertyNamingPolicy = JsonHandler
+    options.JsonSerializerOptions.Converters.Add(JsonHelper.enumConverter);
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonHelper
       .jsonOptions
       .PropertyNamingPolicy;
   });

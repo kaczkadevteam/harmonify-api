@@ -1,7 +1,5 @@
 using System.Net.WebSockets;
-using System.Text;
-using System.Text.Json;
-using Harmonify.Handlers;
+using Harmonify.Helpers;
 using Harmonify.Messages;
 using Harmonify.Models;
 
@@ -26,7 +24,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
     };
     webSocketConnections.Add(connection);
 
-    await SendMessage(connection.WS, firstMessage);
+    await WebSocketHelper.SendMessage(connection.WS, firstMessage);
     await ListenForMessages(connection);
   }
 
@@ -70,7 +68,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
   {
     connection.WS = ws;
     var response = new Message { Type = MessageType.Reconnected };
-    await SendMessage(connection.WS, response);
+    await WebSocketHelper.SendMessage(connection.WS, response);
     await ListenForMessages(connection);
   }
 
@@ -88,7 +86,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
   {
     while (true)
     {
-      var message = await ReadMessage(connection);
+      var message = await WebSocketHelper.ReadMessage(connection);
 
       if (message == null)
       {
@@ -102,7 +100,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
 
       if (message is MessageError)
       {
-        await SendMessage(connection.WS, message);
+        await WebSocketHelper.SendMessage(connection.WS, message);
         continue;
       }
 
@@ -113,7 +111,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
           Type = MessageType.Forbidden,
           ErrorMessage = "Insufficient permissions to perform this action"
         };
-        await SendMessage(connection.WS, response);
+        await WebSocketHelper.SendMessage(connection.WS, response);
         continue;
       }
 
@@ -151,7 +149,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
           ErrorMessage = "Game is already running"
         };
 
-        await SendMessage(connection.WS, response);
+        await WebSocketHelper.SendMessage(connection.WS, response);
       }
     }
     else if (message.Type == MessageType.StartRound)
@@ -174,7 +172,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
           ErrorMessage = "Round is not waiting to be started"
         };
 
-        await SendMessage(connection.WS, response);
+        await WebSocketHelper.SendMessage(connection.WS, response);
       }
     }
   }
@@ -187,7 +185,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
         .Select(
           async (connection) =>
           {
-            await CloseSafely(connection.WS, "Game finished");
+            await WebSocketHelper.CloseSafely(connection.WS, "Game finished");
           }
         )
     );
@@ -207,7 +205,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
       return;
     }
 
-    await SendMessage(connection.WS, message);
+    await WebSocketHelper.SendMessage(connection.WS, message);
   }
 
   public async Task SendToAllPlayers(string gameId, Message message)
@@ -218,7 +216,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
         .Select(
           async (connection) =>
           {
-            await SendMessage(connection.WS, message);
+            await WebSocketHelper.SendMessage(connection.WS, message);
           }
         )
     );
@@ -232,7 +230,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
         .Select(
           async (connection) =>
           {
-            await SendMessage(connection.WS, message);
+            await WebSocketHelper.SendMessage(connection.WS, message);
           }
         )
     );
@@ -242,7 +240,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
   {
     if (connection.WS.State != WebSocketState.Closed)
     {
-      await CloseSafely(connection.WS);
+      await WebSocketHelper.CloseSafely(connection.WS);
 
       var isAnyPlayerConnected = webSocketConnections.Exists(
         (searchedConnection) =>
@@ -255,63 +253,6 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
         webSocketConnections.RemoveAll((conn) => conn.GameId == connection.GameId);
         gameService.RemoveGame(connection.GameId);
       }
-    }
-  }
-
-  private static async Task SendMessage(WebSocket webSocket, object message)
-  {
-    byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, JsonHandler.jsonOptions);
-
-    if (webSocket.State != WebSocketState.Closed)
-    {
-      await webSocket.SendAsync(
-        new ArraySegment<byte>(jsonBytes),
-        WebSocketMessageType.Text,
-        true,
-        CancellationToken.None
-      );
-    }
-  }
-
-  private static async Task<Message?> ReadMessage(WebSocketConnection connection)
-  {
-    var receiveResult = await connection.WS.ReceiveAsync(
-      new ArraySegment<byte>(connection.Buffer),
-      CancellationToken.None
-    );
-
-    if (receiveResult.CloseStatus.HasValue)
-    {
-      return new Message { Type = MessageType.CloseConnection };
-    }
-
-    var jsonString = Encoding.UTF8.GetString(connection.Buffer);
-    jsonString = jsonString.Replace("\0", string.Empty);
-    Array.Clear(connection.Buffer);
-
-    try
-    {
-      return JsonSerializer.Deserialize<Message>(jsonString.Trim(), JsonHandler.jsonOptions);
-    }
-    catch (Exception)
-    {
-      return new MessageError
-      {
-        Type = MessageType.IncorrectFormat,
-        ErrorMessage = "Incorrect message format"
-      };
-    }
-  }
-
-  private static async Task CloseSafely(WebSocket webSocket, string message = "Disconnected")
-  {
-    if (webSocket.State != WebSocketState.Closed)
-    {
-      await webSocket.CloseAsync(
-        WebSocketCloseStatus.NormalClosure,
-        "Game finished",
-        CancellationToken.None
-      );
     }
   }
 }

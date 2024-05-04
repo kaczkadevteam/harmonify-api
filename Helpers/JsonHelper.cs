@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Harmonify.Handlers;
+namespace Harmonify.Helpers;
 
-public static class JsonHandler
+public static class JsonHelper
 {
   public static readonly JsonStringEnumConverter enumConverter = new(JsonNamingPolicy.CamelCase);
 
