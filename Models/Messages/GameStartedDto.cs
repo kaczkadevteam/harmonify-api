@@ -1,4 +1,6 @@
-namespace Harmonify.Models;
+namespace Harmonify.Messages;
+
+using Harmonify.Models;
 
 public class GameStartedDto
 {
