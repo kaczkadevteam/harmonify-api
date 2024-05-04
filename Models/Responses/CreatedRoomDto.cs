@@ -1,7 +1,7 @@
-namespace Harmonify.Responses;
+namespace Harmonify.Messages;
 
 public class CreatedGameDto
 {
-  public required string GameId { get; set; }
-  public required string HostGuid { get; set; }
+  public required string GameId { get; init; }
+  public required string HostGuid { get; init; }
 }

@@ -1,4 +1,4 @@
-using Harmonify.Responses;
+using Harmonify.Messages;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace Harmonify.Handlers;
@@ -11,9 +11,9 @@ public class GlobalExceptionHandler : IExceptionHandler
     CancellationToken cancellationToken
   )
   {
-    var response = new ResponseError<object>
+    var response = new MessageError
     {
-      Type = ResponseType.UnknownError,
+      Type = MessageType.UnknownError,
       ErrorMessage = "Something went wrong!"
     };
 
