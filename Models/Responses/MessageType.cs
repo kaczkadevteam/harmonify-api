@@ -4,14 +4,16 @@ public enum MessageType
 {
   //--------INCOMING-----------
   StartGame,
-  CloseConnection,
+  StartRound,
   EndGame,
+  CloseConnection,
 
   //--------OUTGOING-----------
   CreatedGame,
   NewPlayer,
   GameStarted,
   NextRound,
+  RoundStarted,
   Acknowledged,
   Reconnected,
   ConnectionsList,

@@ -154,6 +154,29 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
         await SendMessage(connection.WS, response);
       }
     }
+    else if (message.Type == MessageType.StartRound)
+    {
+      if (gameService.TryStartRound(connection.GameId))
+      {
+        var response = new MessageWithData<long>
+        {
+          Type = MessageType.RoundStarted,
+          Data = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+
+        await SendToAllPlayers(connection.GameId, response);
+      }
+      else
+      {
+        var response = new MessageError
+        {
+          Type = MessageType.Conflict,
+          ErrorMessage = "Round is not waiting to be started"
+        };
+
+        await SendMessage(connection.WS, response);
+      }
+    }
   }
 
   public async Task EndGame(string gameId)
@@ -173,7 +196,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
     gameService.RemoveGame(gameId);
   }
 
-  public async Task SendToPlayer(string playerGuid, string gameId, object message)
+  public async Task SendToPlayer(string playerGuid, string gameId, Message message)
   {
     var connection = webSocketConnections.Find(
       (connection) => connection.PlayerGuid == playerGuid && connection.GameId == gameId
@@ -187,7 +210,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
     await SendMessage(connection.WS, message);
   }
 
-  public async Task SendToAllPlayers(string gameId, object message)
+  public async Task SendToAllPlayers(string gameId, Message message)
   {
     await Task.WhenAll(
       webSocketConnections
@@ -201,7 +224,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
     );
   }
 
-  public async Task SendToOtherPlayers(string senderGuid, string gameId, object message)
+  public async Task SendToOtherPlayers(string senderGuid, string gameId, Message message)
   {
     await Task.WhenAll(
       webSocketConnections
