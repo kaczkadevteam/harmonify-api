@@ -1,9 +1,16 @@
+using Harmonify.Messages;
 using Harmonify.Models;
 
-namespace Harmonify.Services
+namespace Harmonify.Services;
+
+public interface IGameService
 {
-  public interface IGameService
-  {
-    public Player AddNewPlayer(Game game);
-  }
+  public Game Create(Player host);
+  public bool GameExists(string id);
+  public bool TryStartGame(string id);
+  public bool TryStartRound(string id);
+  public void AddPlayer(string id, Player player);
+  public void RemoveGame(string id);
+  public void HandlePlayerReconnect(string playerGuid, string gameId);
+  public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType);
 }

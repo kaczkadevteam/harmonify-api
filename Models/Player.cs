@@ -1,8 +1,15 @@
-namespace Harmonify.Models
+using System.Diagnostics.CodeAnalysis;
+
+namespace Harmonify.Models;
+
+public class Player
 {
-  public class Player
+  public required string Guid { get; init; }
+  public int Score { get; set; } = 0;
+
+  [SetsRequiredMembers]
+  public Player()
   {
-    public required string Guid { get; init; }
-    public int Score { get; set; }
+    Guid = System.Guid.NewGuid().ToString();
   }
 }
