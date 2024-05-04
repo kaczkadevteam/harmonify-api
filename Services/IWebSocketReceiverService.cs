@@ -4,7 +4,7 @@ using Harmonify.Models;
 
 namespace Harmonify.Services;
 
-public interface IWebSocketService
+public interface IWebSocketReceiverService
 {
   public Task StartConnection(
     WebSocket webSocket,
@@ -19,6 +19,5 @@ public interface IWebSocketService
     out MessageError? response,
     out int statusCode
   );
-  public Task SendToAllPlayers(string gameId, Message message);
   public string GetWsConnections();
 }

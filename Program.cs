@@ -15,9 +15,11 @@ builder
       .PropertyNamingPolicy;
   });
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
+builder.Services.AddSingleton<IConnectionRepository, ConnectionRepository>();
 
 builder.Services.AddSingleton<IGameService, GameService>();
-builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
+builder.Services.AddSingleton<IWebSocketReceiverService, WebSocketReceiverService>();
+builder.Services.AddSingleton<IWebSocketSenderService, WebSocketSenderService>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 

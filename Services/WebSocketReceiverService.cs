@@ -1,14 +1,17 @@
 using System.Net.WebSockets;
+using Harmonify.Data;
 using Harmonify.Helpers;
 using Harmonify.Messages;
 using Harmonify.Models;
 
 namespace Harmonify.Services;
 
-public class WebSocketService(IGameService gameService) : IWebSocketService
+public class WebSocketReceiverService(
+  IGameService gameService,
+  IConnectionRepository connectionRepository,
+  IWebSocketSenderService sender
+) : IWebSocketReceiverService
 {
-  private readonly List<WebSocketConnection> webSocketConnections = [];
-
   public async Task StartConnection(
     WebSocket webSocket,
     string gameId,
@@ -22,7 +25,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
       PlayerGuid = playerGuid,
       GameId = gameId
     };
-    webSocketConnections.Add(connection);
+    connectionRepository.Add(connection);
 
     await WebSocketHelper.SendMessage(connection.WS, firstMessage);
     await ListenForMessages(connection);
@@ -35,7 +38,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
     out int statusCode
   )
   {
-    connection = webSocketConnections.Find((conn) => conn.PlayerGuid == playerGuid);
+    connection = connectionRepository.GetByPlayerGuid(playerGuid);
 
     if (connection == null)
     {
@@ -75,7 +78,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
   public string GetWsConnections()
   {
     string data = "";
-    foreach (var item in webSocketConnections)
+    foreach (var item in connectionRepository.GetAll())
     {
       data = data + "{" + item.ToString() + "}\n\n";
     }
@@ -139,7 +142,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
           Data = new GameStartedDto { }
         };
 
-        await SendToAllPlayers(connection.GameId, response);
+        await sender.SendToAllPlayers(connection.GameId, response);
       }
       else
       {
@@ -162,7 +165,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
           Data = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        await SendToAllPlayers(connection.GameId, response);
+        await sender.SendToAllPlayers(connection.GameId, response);
       }
       else
       {
@@ -177,11 +180,27 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
     }
   }
 
+  private async Task HandleDisconnectFromClient(WebSocketConnection connection)
+  {
+    if (connection.WS.State != WebSocketState.Closed)
+    {
+      await WebSocketHelper.CloseSafely(connection.WS);
+
+      var isAnyPlayerConnected = connectionRepository.IsAnyPlayerConnected(connection.GameId);
+
+      if (!isAnyPlayerConnected)
+      {
+        connectionRepository.RemoveAllByGameId(connection.GameId);
+        gameService.RemoveGame(connection.GameId);
+      }
+    }
+  }
+
   public async Task EndGame(string gameId)
   {
     await Task.WhenAll(
-      webSocketConnections
-        .FindAll((connection) => connection.GameId == gameId)
+      connectionRepository
+        .GetAllByGameId(gameId)
         .Select(
           async (connection) =>
           {
@@ -190,69 +209,7 @@ public class WebSocketService(IGameService gameService) : IWebSocketService
         )
     );
 
-    webSocketConnections.RemoveAll((connection) => connection.GameId == gameId);
+    connectionRepository.RemoveAllByGameId(gameId);
     gameService.RemoveGame(gameId);
-  }
-
-  public async Task SendToPlayer(string playerGuid, string gameId, Message message)
-  {
-    var connection = webSocketConnections.Find(
-      (connection) => connection.PlayerGuid == playerGuid && connection.GameId == gameId
-    );
-
-    if (connection == null)
-    {
-      return;
-    }
-
-    await WebSocketHelper.SendMessage(connection.WS, message);
-  }
-
-  public async Task SendToAllPlayers(string gameId, Message message)
-  {
-    await Task.WhenAll(
-      webSocketConnections
-        .FindAll((connection) => connection.GameId == gameId)
-        .Select(
-          async (connection) =>
-          {
-            await WebSocketHelper.SendMessage(connection.WS, message);
-          }
-        )
-    );
-  }
-
-  public async Task SendToOtherPlayers(string senderGuid, string gameId, Message message)
-  {
-    await Task.WhenAll(
-      webSocketConnections
-        .FindAll((connection) => connection.PlayerGuid != senderGuid && connection.GameId == gameId)
-        .Select(
-          async (connection) =>
-          {
-            await WebSocketHelper.SendMessage(connection.WS, message);
-          }
-        )
-    );
-  }
-
-  private async Task HandleDisconnectFromClient(WebSocketConnection connection)
-  {
-    if (connection.WS.State != WebSocketState.Closed)
-    {
-      await WebSocketHelper.CloseSafely(connection.WS);
-
-      var isAnyPlayerConnected = webSocketConnections.Exists(
-        (searchedConnection) =>
-          searchedConnection.WS.State != WebSocketState.Closed
-          && searchedConnection.GameId == connection.GameId
-      );
-
-      if (!isAnyPlayerConnected)
-      {
-        webSocketConnections.RemoveAll((conn) => conn.GameId == connection.GameId);
-        gameService.RemoveGame(connection.GameId);
-      }
-    }
   }
 }
