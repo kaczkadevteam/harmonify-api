@@ -4,14 +4,17 @@ public enum MessageType
 {
   //--------INCOMING-----------
   StartGame,
-  CloseConnection,
+  StartRound,
   EndGame,
+  CloseConnection,
 
   //--------OUTGOING-----------
-  GameStarted,
-  Acknowledged,
   CreatedGame,
   NewPlayer,
+  GameStarted,
+  NextRound,
+  RoundStarted,
+  Acknowledged,
   Reconnected,
   ConnectionsList,
 
@@ -19,7 +22,7 @@ public enum MessageType
   NoPlayerInGame,
   GameDoesntExist,
   Forbidden,
-  IncorrectStageForMessage,
+  Conflict,
   IncorrectFormat,
   UnknownError,
 }

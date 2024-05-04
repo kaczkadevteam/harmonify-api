@@ -4,7 +4,7 @@ using Harmonify.Models;
 
 namespace Harmonify.Services;
 
-public interface IWebSocketService
+public interface IWebSocketReceiverService
 {
   public Task StartConnection(
     WebSocket webSocket,

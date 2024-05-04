@@ -4,7 +4,8 @@ using Harmonify.Models;
 
 namespace Harmonify.Services;
 
-public class GameService(IGameRepository gameRepository) : IGameService
+public class GameService(IGameRepository gameRepository, IWebSocketSenderService webSocketSender)
+  : IGameService
 {
   private const int minGameIdNumber = 1000;
   private const int maxGameIdNumber = 10_000;
@@ -50,6 +51,34 @@ public class GameService(IGameRepository gameRepository) : IGameService
     return true;
   }
 
+  public bool TryStartRound(string id)
+  {
+    var game = gameRepository.GetGame(id);
+
+    if (game?.State != GameState.RoundSetup)
+    {
+      return false;
+    }
+
+    game.State = GameState.RoundPlaying;
+    Task.Run(async () =>
+    {
+      //TODO: Use time given by host
+      await Task.Delay(TimeSpan.FromSeconds(15));
+
+      game.CurrentRound++;
+      game.State = GameState.RoundSetup;
+
+      var response = new MessageWithData<int>
+      {
+        Type = MessageType.NextRound,
+        Data = game.CurrentRound
+      };
+      await webSocketSender.SendToAllPlayers(id, response);
+    });
+    return true;
+  }
+
   public void AddPlayer(string id, Player player)
   {
     gameRepository.GetGame(id)?.Players.Add(player);
@@ -67,7 +96,11 @@ public class GameService(IGameRepository gameRepository) : IGameService
 
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType)
   {
-    if (messageType == MessageType.StartGame || messageType == MessageType.EndGame)
+    if (
+      messageType == MessageType.StartGame
+      || messageType == MessageType.EndGame
+      || messageType == MessageType.StartRound
+    )
     {
       return gameRepository.GetGame(gameId)?.Host.Guid == playerGuid;
     }

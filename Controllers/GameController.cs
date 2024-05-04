@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 namespace Harmonify.Controllers;
 
 [ApiController]
-public class GameController(IGameService gameService, IWebSocketService webSocketService)
+public class GameController(IGameService gameService, IWebSocketReceiverService webSocketService)
   : ControllerBase
 {
   [ApiExplorerSettings(IgnoreApi = true)]

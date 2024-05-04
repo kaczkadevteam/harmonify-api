@@ -1,5 +1,6 @@
 using Harmonify.Data;
 using Harmonify.Handlers;
+using Harmonify.Helpers;
 using Harmonify.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,15 +9,17 @@ builder
   .Services.AddControllers()
   .AddJsonOptions(options =>
   {
-    options.JsonSerializerOptions.Converters.Add(JsonHandler.enumConverter);
-    options.JsonSerializerOptions.PropertyNamingPolicy = JsonHandler
+    options.JsonSerializerOptions.Converters.Add(JsonHelper.enumConverter);
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonHelper
       .jsonOptions
       .PropertyNamingPolicy;
   });
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
+builder.Services.AddSingleton<IConnectionRepository, ConnectionRepository>();
 
 builder.Services.AddSingleton<IGameService, GameService>();
-builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
+builder.Services.AddSingleton<IWebSocketReceiverService, WebSocketReceiverService>();
+builder.Services.AddSingleton<IWebSocketSenderService, WebSocketSenderService>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
