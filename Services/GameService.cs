@@ -4,9 +4,8 @@ using Harmonify.Models;
 
 namespace Harmonify.Services;
 
-public class GameService(
-  IGameRepository gameRepository /*,IWebSocketService webSocketService*/
-) : IGameService
+public class GameService(IGameRepository gameRepository, IWebSocketSenderService webSocketSender)
+  : IGameService
 {
   private const int minGameIdNumber = 1000;
   private const int maxGameIdNumber = 10_000;
@@ -69,15 +68,13 @@ public class GameService(
 
       game.CurrentRound++;
       game.State = GameState.RoundSetup;
-      //TODO: Remove circular dependency
-      /*var response = new MessageWithData<int>
+
+      var response = new MessageWithData<int>
       {
         Type = MessageType.NextRound,
         Data = game.CurrentRound
       };
-      await webSocketService.SendToAllPlayers(id, response);*/
-
-      Console.WriteLine($"Next Round: {game.CurrentRound}");
+      await webSocketSender.SendToAllPlayers(id, response);
     });
     return true;
   }
