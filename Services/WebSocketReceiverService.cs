@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using System.Text.Json;
 using Harmonify.Data;
 using Harmonify.Helpers;
 using Harmonify.Messages;
@@ -132,25 +133,14 @@ public class WebSocketReceiverService(
 
   public async Task HandleIncomingMessage(WebSocketConnection connection, Message message)
   {
-    if (message.Type == MessageType.StartGame)
+    if (message.Type == MessageType.StartGame && message is MessageWithData<GameStartedDto> msg)
     {
-      if (!(message is MessageWithData<string>))
-      {
-        Console.WriteLine(message);
-        var response = new MessageError
-        {
-          Type = MessageType.IncorrectFormat,
-          ErrorMessage = "Missing required data"
-        };
-        await WebSocketHelper.SendMessage(connection.WS, response);
-        return;
-      }
       if (gameService.TryStartGame(connection.GameId))
       {
         var response = new MessageWithData<GameStartedDto>
         {
           Type = MessageType.GameStarted,
-          Data = null
+          Data = msg.Data
         };
 
         await sender.SendToAllPlayers(connection.GameId, response);
