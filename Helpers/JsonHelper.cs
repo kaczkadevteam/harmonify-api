@@ -13,6 +13,6 @@ public static class JsonHelper
     {
       PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
       Converters = { enumConverter },
-      // TypeInfoResolver = new PolymorphicTypeResolver()
+      TypeInfoResolver = new PolymorphicTypeResolver()
     };
 }
