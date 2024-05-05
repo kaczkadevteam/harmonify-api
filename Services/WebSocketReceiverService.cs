@@ -133,11 +133,11 @@ public class WebSocketReceiverService(
 
   public async Task HandleIncomingMessage(WebSocketConnection connection, Message message)
   {
-    if (message.Type == MessageType.StartGame && message is MessageWithData<GameStartedDto> msg)
+    if (message.Type == MessageType.StartGame && message is MessageWithData<StartedGameDto> msg)
     {
       if (gameService.TryStartGame(connection.GameId))
       {
-        var response = new MessageWithData<GameStartedDto>
+        var response = new MessageWithData<StartedGameDto>
         {
           Type = MessageType.GameStarted,
           Data = msg.Data
