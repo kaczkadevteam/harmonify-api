@@ -49,4 +49,20 @@ public class WebSocketSenderService(IConnectionRepository connectionRepository)
         )
     );
   }
+
+  public async Task EndConnections(string gameId)
+  {
+    await Task.WhenAll(
+      connectionRepository
+        .GetAllByGameId(gameId)
+        .Select(
+          async (connection) =>
+          {
+            await WebSocketHelper.CloseSafely(connection.WS, "Game finished");
+          }
+        )
+    );
+
+    connectionRepository.RemoveAllByGameId(gameId);
+  }
 }
