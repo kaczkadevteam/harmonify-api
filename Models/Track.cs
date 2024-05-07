@@ -6,8 +6,8 @@ public class Track
   public required int Duration_ms { get; set; }
   public required string Name { get; set; }
   public required string Uri { get; set; }
-  public required string Guess { get; set; }
-  public required int TrackStart_ms { get; set; }
+  public string? Guess { get; set; }
+  public int? TrackStart_ms { get; set; }
 
   public required Album Album { get; set; }
 }

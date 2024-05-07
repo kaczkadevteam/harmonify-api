@@ -1,8 +1,6 @@
-using System.Net.WebSockets;
 using Harmonify.Data;
 using Harmonify.Helpers;
 using Harmonify.Messages;
-using Harmonify.Models;
 
 namespace Harmonify.Services;
 

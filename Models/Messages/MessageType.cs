@@ -17,7 +17,6 @@ public enum MessageType
   Acknowledged,
   Reconnected,
   ConnectionsList,
-  DataTooLarge,
 
   //------ERRORS---------
   NoPlayerInGame,
@@ -26,4 +25,5 @@ public enum MessageType
   Conflict,
   IncorrectFormat,
   UnknownError,
+  DataTooLarge,
 }
