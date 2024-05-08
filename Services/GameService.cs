@@ -64,7 +64,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     Task.Run(async () =>
     {
       //TODO: Use time given by host
-      await Task.Delay(TimeSpan.FromSeconds(15));
+      await Task.Delay(TimeSpan.FromSeconds(2));
+
+      //TODO: Use round count given by host
+      if (game.CurrentRound == 5)
+      {
+        game.State = GameState.GameResult;
+        await EndGame(id);
+        return;
+      }
 
       game.CurrentRound++;
       game.State = GameState.RoundSetup;
@@ -89,8 +97,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     throw new NotImplementedException();
   }
 
-  public void RemoveGame(string id)
+  public async Task EndGame(string id)
   {
+    await webSocketSender.EndConnections(id);
     gameRepository.RemoveGame(id);
   }
 
