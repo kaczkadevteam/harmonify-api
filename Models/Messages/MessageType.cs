@@ -25,4 +25,5 @@ public enum MessageType
   Conflict,
   IncorrectFormat,
   UnknownError,
+  DataTooLarge,
 }

@@ -25,19 +25,38 @@ public static class WebSocketHelper
 
   public static async Task<Message?> ReadMessage(WebSocketConnection connection)
   {
-    var receiveResult = await connection.WS.ReceiveAsync(
-      new ArraySegment<byte>(connection.Buffer),
-      CancellationToken.None
-    );
+    WebSocketReceiveResult receiveResult;
+    string jsonString = "";
+    const int WebsocketMessagePartsLimit = 30;
+    int messagePartsCount = 0;
 
-    if (receiveResult.CloseStatus.HasValue)
+    do
     {
-      return new Message { Type = MessageType.CloseConnection };
+      receiveResult = await connection.WS.ReceiveAsync(
+        new ArraySegment<byte>(connection.Buffer),
+        CancellationToken.None
+      );
+
+      if (receiveResult.CloseStatus.HasValue)
+      {
+        return new Message { Type = MessageType.CloseConnection };
+      }
+
+      jsonString += Encoding.UTF8.GetString(connection.Buffer);
+      messagePartsCount++;
+      Array.Clear(connection.Buffer);
+    } while (!receiveResult.EndOfMessage && messagePartsCount < WebsocketMessagePartsLimit);
+
+    if (messagePartsCount > WebsocketMessagePartsLimit)
+    {
+      return new MessageError
+      {
+        Type = MessageType.DataTooLarge,
+        ErrorMessage = "Data is too large"
+      };
     }
 
-    var jsonString = Encoding.UTF8.GetString(connection.Buffer);
     jsonString = jsonString.Replace("\0", string.Empty);
-    Array.Clear(connection.Buffer);
 
     try
     {

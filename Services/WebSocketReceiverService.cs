@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using System.Text.Json;
 using Harmonify.Data;
 using Harmonify.Helpers;
 using Harmonify.Messages;
@@ -132,14 +133,14 @@ public class WebSocketReceiverService(
 
   public async Task HandleIncomingMessage(WebSocketConnection connection, Message message)
   {
-    if (message.Type == MessageType.StartGame)
+    if (message.Type == MessageType.StartGame && message is MessageWithData<StartedGameDto> msg)
     {
       if (gameService.TryStartGame(connection.GameId))
       {
-        var response = new MessageWithData<GameStartedDto>
+        var response = new MessageWithData<StartedGameDto>
         {
           Type = MessageType.GameStarted,
-          Data = new GameStartedDto { }
+          Data = msg.Data
         };
 
         await sender.SendToAllPlayers(connection.GameId, response);

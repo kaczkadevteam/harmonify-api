@@ -13,6 +13,7 @@ builder
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonHelper
       .jsonOptions
       .PropertyNamingPolicy;
+    options.JsonSerializerOptions.TypeInfoResolver = JsonHelper.jsonOptions.TypeInfoResolver;
   });
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
 builder.Services.AddSingleton<IConnectionRepository, ConnectionRepository>();
