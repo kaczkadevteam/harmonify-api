@@ -2,31 +2,48 @@ namespace Harmonify.Models;
 
 public class Track
 {
-  public required List<Artist> Artists { get; set; }
-  public required int Duration_ms { get; set; }
-  public required string Name { get; set; }
-  public required string Uri { get; set; }
-  public string? Guess { get; set; }
+  public required List<Artist> Artists { get; init; }
+  public required int Duration_ms { get; init; }
+  public required string Name { get; init; }
+  public required string Uri { get; init; }
+  public required Album Album { get; init; }
+  private string? guess;
+  public string Guess
+  {
+    get
+    {
+      if (guess == null)
+      {
+        var artistsString = Artists.Aggregate(
+          "",
+          (acc, artist) =>
+          {
+            return $"{acc}, {artist.Name}";
+          }
+        )[2..];
+        guess = $"{Name} - {artistsString} - {Album.Name}";
+      }
+      return guess;
+    }
+  }
   public int? TrackStart_ms { get; set; }
-
-  public required Album Album { get; set; }
 }
 
 public class Artist
 {
-  public required string Name { get; set; }
-  public required string Id { get; set; }
+  public required string Name { get; init; }
+  public required string Id { get; init; }
 }
 
 public class Album
 {
-  public required string Name { get; set; }
-  public required List<Image> Images { get; set; }
+  public required string Name { get; init; }
+  public required List<Image> Images { get; init; }
 }
 
 public class Image
 {
-  public required string Url { get; set; }
-  public int Height { get; set; }
-  public int Width { get; set; }
+  public required string Url { get; init; }
+  public int Height { get; init; }
+  public int Width { get; init; }
 }
