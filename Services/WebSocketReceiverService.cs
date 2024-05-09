@@ -137,10 +137,18 @@ public class WebSocketReceiverService(
     {
       if (gameService.TryStartGame(connection.GameId, msg.Data))
       {
-        var response = new MessageWithData<StartGameDto>
+        var response = new MessageWithData<GameStartedDto>
         {
           Type = MessageType.GameStarted,
-          Data = msg.Data
+          Data = new GameStartedDto
+          {
+            GameSettings = msg.Data.GameSettings,
+            PossibleGuesses = msg
+              .Data.Tracks.Select(
+                (track) => new DisplayedGuessDto { Guess = track.Guess, Id = track.Uri }
+              )
+              .ToList()
+          }
         };
 
         await sender.SendToAllPlayers(connection.GameId, response);
