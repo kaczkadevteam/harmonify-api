@@ -1,0 +1,818 @@
+{
+    "startGame": {
+        "$type": "message/startedGameDto",
+        "type": "startGame",
+        "data": {
+            "tracks": [
+                {
+                    "artists": [
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Stephanie Beatriz",
+                            "id": "5PYToRCsrnvikZg3yl2JMr"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Mick Lauer",
+                            "id": "6ZiQ6uWJ2zi6EQakRR5Pkx"
+                        },
+                        {
+                            "name": "Keith David",
+                            "id": "1LPgqTHt7RmHwYtS9KQTMY"
+                        },
+                        {
+                            "name": "Blake Roman",
+                            "id": "18p5uhOP0T6w7EwYy389ej"
+                        },
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        }
+                    ],
+                    "duration_ms": 177664,
+                    "name": "Happy Day In Hell",
+                    "uri": "spotify:track:57BK2VtFiJZQ8YbiCccHde",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Happy Day In Hell - Erika Henningsen, Stephanie Beatriz, Sam Haft, Mick Lauer, Keith David, Blake Roman, Andrew Underberg - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Alex Brightman",
+                            "id": "7abCELr0U2E5K2nPjVtWkN"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        }
+                    ],
+                    "duration_ms": 140653,
+                    "name": "Hell Is Forever",
+                    "uri": "spotify:track:6Ux7hThoEVu7V0YmmZqunV",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Hell Is Forever - Andrew Underberg, Sam Haft, Alex Brightman, Erika Henningsen - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Christian Borle",
+                            "id": "3mXvO1rdMCgdOYNiWeduWG"
+                        },
+                        {
+                            "name": "Amir Talai",
+                            "id": "1el8TNH6bcVfqnavlh0qZL"
+                        },
+                        {
+                            "name": "Joel Perez",
+                            "id": "2W9W8wwOXJCux8sfyptX2p"
+                        }
+                    ],
+                    "duration_ms": 180475,
+                    "name": "Stayed Gone",
+                    "uri": "spotify:track:4Po97bPnn3ISdEkuJBMt2f",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Stayed Gone - Andrew Underberg, Sam Haft, Christian Borle, Amir Talai, Joel Perez - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Alex Brightman",
+                            "id": "7abCELr0U2E5K2nPjVtWkN"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Stephanie Beatriz",
+                            "id": "5PYToRCsrnvikZg3yl2JMr"
+                        },
+                        {
+                            "name": "Blake Roman",
+                            "id": "18p5uhOP0T6w7EwYy389ej"
+                        }
+                    ],
+                    "duration_ms": 90028,
+                    "name": "It Starts With Sorry",
+                    "uri": "spotify:track:5HPzrBzcD73ltEo5cCCl8Z",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "It Starts With Sorry - Andrew Underberg, Sam Haft, Alex Brightman, Erika Henningsen, Stephanie Beatriz, Blake Roman - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Daphne Rubin-Vega",
+                            "id": "0WJ95VwySC8v8HR504J5vR"
+                        },
+                        {
+                            "name": "Lilli Cooper",
+                            "id": "61Im27379GhfbMD5LVDmlp"
+                        },
+                        {
+                            "name": "James Monroe Iglehart",
+                            "id": "1RHbG28m5gaCOeIgaxEgLb"
+                        }
+                    ],
+                    "duration_ms": 95682,
+                    "name": "Respectless",
+                    "uri": "spotify:track:2LyuaHvi331NSj44dOxulG",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Respectless - Andrew Underberg, Sam Haft, Daphne Rubin-Vega, Lilli Cooper, James Monroe Iglehart - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Daphne Rubin-Vega",
+                            "id": "0WJ95VwySC8v8HR504J5vR"
+                        },
+                        {
+                            "name": "Stephanie Beatriz",
+                            "id": "5PYToRCsrnvikZg3yl2JMr"
+                        },
+                        {
+                            "name": "James Monroe Iglehart",
+                            "id": "1RHbG28m5gaCOeIgaxEgLb"
+                        }
+                    ],
+                    "duration_ms": 177451,
+                    "name": "Whatever It Takes",
+                    "uri": "spotify:track:0CY6AXx4FXWMzJpruDy0EG",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Whatever It Takes - Andrew Underberg, Sam Haft, Daphne Rubin-Vega, Stephanie Beatriz, James Monroe Iglehart - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Blake Roman",
+                            "id": "18p5uhOP0T6w7EwYy389ej"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        }
+                    ],
+                    "duration_ms": 127689,
+                    "name": "Poison",
+                    "uri": "spotify:track:7kEzfZXbV63tlqkPyyRd7n",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Poison - Blake Roman, Sam Haft, Andrew Underberg - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Keith David",
+                            "id": "1LPgqTHt7RmHwYtS9KQTMY"
+                        },
+                        {
+                            "name": "Blake Roman",
+                            "id": "18p5uhOP0T6w7EwYy389ej"
+                        }
+                    ],
+                    "duration_ms": 175113,
+                    "name": "Loser, Baby",
+                    "uri": "spotify:track:6zJjw0iXY0aMBEUyCG1NsA",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Loser, Baby - Andrew Underberg, Sam Haft, Keith David, Blake Roman - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Jeremy Jordan",
+                            "id": "0vKWxtht5v5MoAu4DID0Ub"
+                        },
+                        {
+                            "name": "Amir Talai",
+                            "id": "1el8TNH6bcVfqnavlh0qZL"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Kimiko Glenn",
+                            "id": "6lU0XGyOn94aBZno3H9WpA"
+                        }
+                    ],
+                    "duration_ms": 133717,
+                    "name": "Hell’s Greatest Dad",
+                    "uri": "spotify:track:2h4MTQZP8quVwuwrtIPErD",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Hell’s Greatest Dad - Andrew Underberg, Sam Haft, Jeremy Jordan, Amir Talai, Erika Henningsen, Kimiko Glenn - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Jeremy Jordan",
+                            "id": "0vKWxtht5v5MoAu4DID0Ub"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        }
+                    ],
+                    "duration_ms": 193235,
+                    "name": "More Than Anything",
+                    "uri": "spotify:track:64bs8pCgpueh0mFEKZWGXS",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "More Than Anything - Andrew Underberg, Sam Haft, Jeremy Jordan, Erika Henningsen - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Darren Criss",
+                            "id": "3nQ59hkeciYoR6RreQL4Rv"
+                        },
+                        {
+                            "name": "Shoba Narayan",
+                            "id": "5LNiqorupgMehK3ewlUCvj"
+                        },
+                        {
+                            "name": "Patina Miller",
+                            "id": "1V5Hq88OkI5tpsh1EKxStp"
+                        }
+                    ],
+                    "duration_ms": 60554,
+                    "name": "Welcome To Heaven",
+                    "uri": "spotify:track:1Hqk4SHLCLSQYfORVEcWkf",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Welcome To Heaven - Andrew Underberg, Sam Haft, Darren Criss, Shoba Narayan, Patina Miller - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Shoba Narayan",
+                            "id": "5LNiqorupgMehK3ewlUCvj"
+                        },
+                        {
+                            "name": "Patina Miller",
+                            "id": "1V5Hq88OkI5tpsh1EKxStp"
+                        },
+                        {
+                            "name": "Jessica Vosk",
+                            "id": "1OwC6rT6DbycViGMbX94yC"
+                        },
+                        {
+                            "name": "Stephanie Beatriz",
+                            "id": "5PYToRCsrnvikZg3yl2JMr"
+                        }
+                    ],
+                    "duration_ms": 188677,
+                    "name": "You Didn’t Know",
+                    "uri": "spotify:track:0nD9zX0pnjOGhwZbCtMSGR",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "You Didn’t Know - Andrew Underberg, Sam Haft, Erika Henningsen, Shoba Narayan, Patina Miller, Jessica Vosk, Stephanie Beatriz - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Daphne Rubin-Vega",
+                            "id": "0WJ95VwySC8v8HR504J5vR"
+                        }
+                    ],
+                    "duration_ms": 90305,
+                    "name": "Out For Love",
+                    "uri": "spotify:track:3CAgZdCErAPdUBwFmaRyGA",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Out For Love - Andrew Underberg, Sam Haft, Daphne Rubin-Vega - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Leslie Kritzer",
+                            "id": "0VJgvx0e4MTvL1A9o2HKQz"
+                        },
+                        {
+                            "name": "Amir Talai",
+                            "id": "1el8TNH6bcVfqnavlh0qZL"
+                        },
+                        {
+                            "name": "Kimiko Glenn",
+                            "id": "6lU0XGyOn94aBZno3H9WpA"
+                        },
+                        {
+                            "name": "Alex Brightman",
+                            "id": "7abCELr0U2E5K2nPjVtWkN"
+                        },
+                        {
+                            "name": "Blake Roman",
+                            "id": "18p5uhOP0T6w7EwYy389ej"
+                        }
+                    ],
+                    "duration_ms": 209996,
+                    "name": "Ready For This",
+                    "uri": "spotify:track:6JyzuWC92biyVZ1l4vUYzi",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Ready For This - Andrew Underberg, Sam Haft, Erika Henningsen, Leslie Kritzer, Amir Talai, Kimiko Glenn, Alex Brightman, Blake Roman - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Stephanie Beatriz",
+                            "id": "5PYToRCsrnvikZg3yl2JMr"
+                        }
+                    ],
+                    "duration_ms": 60252,
+                    "name": "More Than Anything - Reprise",
+                    "uri": "spotify:track:0Kq2P8gDwYTc2OdiHknX7F",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "More Than Anything - Reprise - Andrew Underberg, Sam Haft, Erika Henningsen, Stephanie Beatriz - Hazbin Hotel (Original Soundtrack)"
+                },
+                {
+                    "artists": [
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Jeremy Jordan",
+                            "id": "0vKWxtht5v5MoAu4DID0Ub"
+                        },
+                        {
+                            "name": "Amir Talai",
+                            "id": "1el8TNH6bcVfqnavlh0qZL"
+                        },
+                        {
+                            "name": "Stephanie Beatriz",
+                            "id": "5PYToRCsrnvikZg3yl2JMr"
+                        },
+                        {
+                            "name": "Blake Roman",
+                            "id": "18p5uhOP0T6w7EwYy389ej"
+                        },
+                        {
+                            "name": "Keith David",
+                            "id": "1LPgqTHt7RmHwYtS9KQTMY"
+                        },
+                        {
+                            "name": "Christian Borle",
+                            "id": "3mXvO1rdMCgdOYNiWeduWG"
+                        },
+                        {
+                            "name": "Joel Perez",
+                            "id": "2W9W8wwOXJCux8sfyptX2p"
+                        },
+                        {
+                            "name": "Kimiko Glenn",
+                            "id": "6lU0XGyOn94aBZno3H9WpA"
+                        },
+                        {
+                            "name": "Krystina Alabado",
+                            "id": "4xL2eFX2i8uGTzi2tT3b3u"
+                        }
+                    ],
+                    "duration_ms": 230580,
+                    "name": "Finale",
+                    "uri": "spotify:track:6dss2WRbaDVKw4vpZlNxSv",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    },
+                    "guess": "Finale - Andrew Underberg, Sam Haft, Erika Henningsen, Jeremy Jordan, Amir Talai, Stephanie Beatriz, Blake Roman, Keith David, Christian Borle, Joel Perez, Kimiko Glenn, Krystina Alabado - Hazbin Hotel (Original Soundtrack)"
+                }
+            ],
+            "gameSettings": {
+                "breakDuration": 2,
+                "trackDuration": 5,
+                "roundDuration": 1,
+                "roundCount": 5,
+                "trackStartLowerBound": 0.1,
+                "trackStartUpperBound": 0.9
+            }
+        }
+    }
+}

@@ -66,10 +66,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.State = GameState.RoundPlaying;
     Task.Run(async () =>
     {
-      await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundTime));
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
 
-      //TODO: Use round count given by host
-      if (game.CurrentRound == 5)
+      if (game.CurrentRound == game.Settings.RoundCount)
       {
         game.State = GameState.GameResult;
         await EndGame(id);
