@@ -8,6 +8,7 @@ public class Game
   public GameState State { get; set; } = GameState.GameSetup;
   public int CurrentRound { get; set; } = 1;
   public List<Track> Tracks { get; set; } = [];
+  public List<Track> DrawnTracks { get; set; } = [];
   public GameSettings Settings { get; set; } =
     new GameSettings
     {

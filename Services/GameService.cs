@@ -48,6 +48,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     game.Tracks = data.Tracks;
+    game.DrawnTracks = DrawTracksRandomly(data.Tracks, data.GameSettings.RoundCount);
     game.Settings = data.GameSettings;
     game.CurrentRound = 1;
     game.State = GameState.RoundSetup;
@@ -116,5 +117,25 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return true;
+  }
+
+  private static List<Track> DrawTracksRandomly(List<Track> tracks, int count)
+  {
+    List<Track> drawnTracks = [];
+    var leftTracks = tracks[..];
+
+    for (var i = 0; i < count; i++)
+    {
+      if (leftTracks.Count == 0)
+      {
+        leftTracks = tracks[..];
+      }
+
+      var drawnIndex = Random.Shared.Next(leftTracks.Count);
+      drawnTracks.Add(leftTracks[drawnIndex]);
+      leftTracks.RemoveAt(drawnIndex);
+    }
+
+    return drawnTracks;
   }
 }
