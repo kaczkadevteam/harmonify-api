@@ -2,7 +2,7 @@ namespace Harmonify.Messages;
 
 using Harmonify.Models;
 
-public class StartedGameDto
+public class StartGameDto
 {
   public required List<Track> Tracks { get; set; }
   public required GameSettings GameSettings { get; set; }

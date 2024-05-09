@@ -38,7 +38,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return gameRepository.GameExists(id);
   }
 
-  public bool TryStartGame(string id, StartedGameDto data)
+  public bool TryStartGame(string id, StartGameDto data)
   {
     var game = gameRepository.GetGame(id);
 

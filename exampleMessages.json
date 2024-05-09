@@ -1,6 +1,6 @@
 {
     "startGame": {
-        "$type": "message/startedGameDto",
+        "$type": "message/startGameDto",
         "type": "startGame",
         "data": {
             "tracks": [
