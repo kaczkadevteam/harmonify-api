@@ -7,7 +7,7 @@ public interface IGameService
 {
   public Game Create(Player host);
   public bool GameExists(string id);
-  public bool TryStartGame(string id);
+  public bool TryStartGame(string id, StartedGameDto data);
   public bool TryStartRound(string id);
   public void AddPlayer(string id, Player player);
   public Task EndGame(string id);

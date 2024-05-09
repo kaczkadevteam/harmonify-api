@@ -7,4 +7,6 @@ public class Game
   public required List<Player> Players { get; set; }
   public GameState State { get; set; } = GameState.GameSetup;
   public int CurrentRound { get; set; } = 1;
+  public List<Track> Tracks { get; set; } = [];
+  public GameSettings Settings { get; set; } = new GameSettings { RoundTime = 10 };
 }

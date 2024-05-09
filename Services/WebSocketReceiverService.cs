@@ -135,7 +135,7 @@ public class WebSocketReceiverService(
   {
     if (message.Type == MessageType.StartGame && message is MessageWithData<StartedGameDto> msg)
     {
-      if (gameService.TryStartGame(connection.GameId))
+      if (gameService.TryStartGame(connection.GameId, msg.Data))
       {
         var response = new MessageWithData<StartedGameDto>
         {

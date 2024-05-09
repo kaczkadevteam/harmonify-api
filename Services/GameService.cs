@@ -38,7 +38,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return gameRepository.GameExists(id);
   }
 
-  public bool TryStartGame(string id)
+  public bool TryStartGame(string id, StartedGameDto data)
   {
     var game = gameRepository.GetGame(id);
 
@@ -47,6 +47,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return false;
     }
 
+    game.Tracks = data.Tracks;
+    game.Settings = data.GameSettings;
+    game.CurrentRound = 1;
     game.State = GameState.RoundSetup;
     return true;
   }
@@ -63,8 +66,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.State = GameState.RoundPlaying;
     Task.Run(async () =>
     {
-      //TODO: Use time given by host
-      await Task.Delay(TimeSpan.FromSeconds(2));
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundTime));
 
       //TODO: Use round count given by host
       if (game.CurrentRound == 5)
