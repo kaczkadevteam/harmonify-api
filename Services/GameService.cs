@@ -70,22 +70,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
 
-      if (game.CurrentRound == game.Settings.RoundCount)
-      {
-        game.State = GameState.GameResult;
-        await EndGame(id);
-        return;
-      }
-
-      game.CurrentRound++;
-      game.State = GameState.RoundSetup;
-
-      var response = new MessageWithData<int>
-      {
-        Type = MessageType.NextRound,
-        Data = game.CurrentRound
-      };
-      await webSocketSender.SendToAllPlayers(id, response);
+      await EndRound(game);
     });
     return true;
   }
@@ -163,6 +148,19 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
+  public async Task<bool> TryEndRoundIfAllPlayersSubmittedGuess(string gameId)
+  {
+    var game = gameRepository.GetGame(gameId);
+
+    if (game?.State == GameState.RoundPlaying && HasEveryPlayerFinished(game))
+    {
+      await EndRound(game);
+      return true;
+    }
+
+    return false;
+  }
+
   private static List<Track> DrawTracksRandomly(List<Track> tracks, int count)
   {
     List<Track> drawnTracks = [];
@@ -181,5 +179,30 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return drawnTracks;
+  }
+
+  private async Task EndRound(Game game)
+  {
+    if (game.CurrentRound == game.Settings.RoundCount)
+    {
+      game.State = GameState.GameResult;
+      await EndGame(game.Id);
+      return;
+    }
+
+    game.CurrentRound++;
+    game.State = GameState.RoundSetup;
+
+    var response = new MessageWithData<int>
+    {
+      Type = MessageType.NextRound,
+      Data = game.CurrentRound
+    };
+    await webSocketSender.SendToAllPlayers(game.Id, response);
+  }
+
+  private bool HasEveryPlayerFinished(Game game)
+  {
+    return !game.Players.Exists((p) => p.RoundResults.Count != game.CurrentRound);
   }
 }
