@@ -65,6 +65,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     game.State = GameState.RoundPlaying;
+    game.RoundStartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     Task.Run(async () =>
     {
       await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
