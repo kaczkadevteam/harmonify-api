@@ -133,14 +133,22 @@ public class WebSocketReceiverService(
 
   public async Task HandleIncomingMessage(WebSocketConnection connection, Message message)
   {
-    if (message.Type == MessageType.StartGame && message is MessageWithData<StartedGameDto> msg)
+    if (message.Type == MessageType.StartGame && message is MessageWithData<StartGameDto> msg)
     {
-      if (gameService.TryStartGame(connection.GameId))
+      if (gameService.TryStartGame(connection.GameId, msg.Data))
       {
-        var response = new MessageWithData<StartedGameDto>
+        var response = new MessageWithData<GameStartedDto>
         {
           Type = MessageType.GameStarted,
-          Data = msg.Data
+          Data = new GameStartedDto
+          {
+            GameSettings = msg.Data.GameSettings,
+            PossibleGuesses = msg
+              .Data.Tracks.Select(
+                (track) => new DisplayedGuessDto { Guess = track.Guess, Id = track.Uri }
+              )
+              .ToList()
+          }
         };
 
         await sender.SendToAllPlayers(connection.GameId, response);

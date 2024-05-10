@@ -38,7 +38,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return gameRepository.GameExists(id);
   }
 
-  public bool TryStartGame(string id)
+  public bool TryStartGame(string id, StartGameDto data)
   {
     var game = gameRepository.GetGame(id);
 
@@ -47,6 +47,10 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return false;
     }
 
+    game.Tracks = data.Tracks;
+    game.DrawnTracks = DrawTracksRandomly(data.Tracks, data.GameSettings.RoundCount);
+    game.Settings = data.GameSettings;
+    game.CurrentRound = 1;
     game.State = GameState.RoundSetup;
     return true;
   }
@@ -63,11 +67,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.State = GameState.RoundPlaying;
     Task.Run(async () =>
     {
-      //TODO: Use time given by host
-      await Task.Delay(TimeSpan.FromSeconds(2));
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
 
-      //TODO: Use round count given by host
-      if (game.CurrentRound == 5)
+      if (game.CurrentRound == game.Settings.RoundCount)
       {
         game.State = GameState.GameResult;
         await EndGame(id);
@@ -115,5 +117,25 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return true;
+  }
+
+  private static List<Track> DrawTracksRandomly(List<Track> tracks, int count)
+  {
+    List<Track> drawnTracks = [];
+    var leftTracks = tracks[..];
+
+    for (var i = 0; i < count; i++)
+    {
+      if (leftTracks.Count == 0)
+      {
+        leftTracks = tracks[..];
+      }
+
+      var drawnIndex = Random.Shared.Next(leftTracks.Count);
+      drawnTracks.Add(leftTracks[drawnIndex]);
+      leftTracks.RemoveAt(drawnIndex);
+    }
+
+    return drawnTracks;
   }
 }
