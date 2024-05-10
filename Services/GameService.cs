@@ -120,6 +120,49 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
+  public bool TryEvaluatePlayerGuess(string gameId, string playerGuid, string userGuess)
+  {
+    var game = gameRepository.GetGame(gameId);
+    var player = game?.Players.Find((p) => p.Guid == playerGuid);
+
+    if (
+      game?.State != GameState.RoundPlaying
+      || player == null
+      || player.RoundResults.Count == game.CurrentRound
+    )
+    {
+      return false;
+    }
+
+    var guessTime =
+      (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - game.RoundStartTimestamp) / 1000;
+
+    // See file "punctation_function.png" for visual representation
+    int score = (int)
+      MathF.Floor(
+        guessTime switch
+        {
+          < 3 => -5 * (guessTime - 3) + 150,
+          >= 3 => (100 / MathF.Pow(guessTime - 2, 0.05f)) + 50
+        }
+      );
+
+    var trackGuess = game.DrawnTracks[game.CurrentRound - 1].Guess;
+    score = userGuess switch
+    {
+      var g when g == trackGuess => score,
+      // Guessed album
+      var g when g.Split(" - ")[2] == trackGuess.Split(" - ")[2] => score / 4,
+      // Guessed artist
+      var g when g.Split(" - ")[1] == trackGuess.Split(" - ")[1] => score / 5,
+      _ => 0
+    };
+
+    player.RoundResults.Add(new RoundResult { Guess = userGuess, Score = score });
+
+    return true;
+  }
+
   private static List<Track> DrawTracksRandomly(List<Track> tracks, int count)
   {
     List<Track> drawnTracks = [];

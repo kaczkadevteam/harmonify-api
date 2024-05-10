@@ -187,6 +187,15 @@ public class WebSocketReceiverService(
         await WebSocketHelper.SendMessage(connection.WS, response);
       }
     }
+    else if (message.Type == MessageType.Guess && message is MessageWithData<string> msg2)
+    {
+      if (gameService.TryEvaluatePlayerGuess(connection.GameId, connection.PlayerGuid, msg2.Data))
+      {
+        var response = new Message { Type = MessageType.Acknowledged };
+
+        await WebSocketHelper.SendMessage(connection.WS, response);
+      }
+    }
   }
 
   private async Task HandleDisconnectFromClient(WebSocketConnection connection)

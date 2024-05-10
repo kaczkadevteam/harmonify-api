@@ -7,6 +7,7 @@ public enum MessageType
   StartRound,
   EndGame,
   CloseConnection,
+  Guess,
 
   //--------OUTGOING-----------
   CreatedGame,
