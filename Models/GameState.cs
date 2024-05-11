@@ -5,6 +5,6 @@ public enum GameState
   GameSetup,
   RoundSetup,
   RoundPlaying,
-  RoundResult,
-  GameResult
+  RoundFinish,
+  GameFinish
 }

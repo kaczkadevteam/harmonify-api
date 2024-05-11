@@ -15,6 +15,7 @@ public enum MessageType
   GameStarted,
   NextRound,
   RoundStarted,
+  RoundFinished,
   Acknowledged,
   Reconnected,
   ConnectionsList,
