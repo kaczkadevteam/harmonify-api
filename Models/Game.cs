@@ -14,7 +14,8 @@ public class Game
     new GameSettings
     {
       RoundDuration = 30,
-      BreakDuration = 3,
+      BreakDurationBetweenTrackPlays = 3,
+      BreakDurationBetweenRounds = 10,
       RoundCount = 20,
       TrackDuration = 10,
       TrackStartLowerBound = 0.1f,

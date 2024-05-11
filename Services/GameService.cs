@@ -69,7 +69,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     Task.Run(async () =>
     {
       await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
-      Console.WriteLine("End Round");
       await EndRound(game);
     });
     return true;
@@ -228,7 +227,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       )
     );
 
-    await Task.Delay(TimeSpan.FromSeconds(5));
+    await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
     await StartNextRound(game);
   }
 
