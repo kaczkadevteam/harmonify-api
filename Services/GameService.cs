@@ -69,7 +69,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     Task.Run(async () =>
     {
       await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
-
+      Console.WriteLine("End Round");
       await EndRound(game);
     });
     return true;
@@ -184,13 +184,56 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   private async Task EndRound(Game game)
   {
+    if (game.State != GameState.RoundPlaying)
+    {
+      return;
+    }
+
     if (game.CurrentRound == game.Settings.RoundCount)
     {
-      game.State = GameState.GameResult;
+      game.State = GameState.GameFinish;
       await EndGame(game.Id);
       return;
     }
 
+    game.State = GameState.RoundFinish;
+
+    var playersDto = game
+      .Players.Select((player) => new PlayerDto { Guid = player.Guid, Score = player.Score })
+      .ToList();
+
+    await Task.WhenAll(
+      game.Players.Select(
+        async (player) =>
+        {
+          if (player.RoundResults.Count != game.CurrentRound)
+          {
+            player.RoundResults.Add(new RoundResult { Guess = "", Score = 0 });
+          }
+
+          var response = new MessageWithData<RoundFinishedDto>
+          {
+            Type = MessageType.NextRound,
+            Data = new RoundFinishedDto
+            {
+              Track = game.DrawnTracks[game.CurrentRound - 1],
+              Score = player.Score,
+              RoundResult = player.RoundResults.Last(),
+              Players = playersDto
+            }
+          };
+
+          await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
+        }
+      )
+    );
+
+    await Task.Delay(TimeSpan.FromSeconds(5));
+    await StartNextRound(game);
+  }
+
+  private async Task StartNextRound(Game game)
+  {
     game.CurrentRound++;
     game.State = GameState.RoundSetup;
 
@@ -202,7 +245,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     await webSocketSender.SendToAllPlayers(game.Id, response);
   }
 
-  private bool HasEveryPlayerFinished(Game game)
+  private static bool HasEveryPlayerFinished(Game game)
   {
     return !game.Players.Exists((p) => p.RoundResults.Count != game.CurrentRound);
   }
