@@ -65,26 +65,12 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     game.State = GameState.RoundPlaying;
+    game.RoundStartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     Task.Run(async () =>
     {
       await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
 
-      if (game.CurrentRound == game.Settings.RoundCount)
-      {
-        game.State = GameState.GameResult;
-        await EndGame(id);
-        return;
-      }
-
-      game.CurrentRound++;
-      game.State = GameState.RoundSetup;
-
-      var response = new MessageWithData<int>
-      {
-        Type = MessageType.NextRound,
-        Data = game.CurrentRound
-      };
-      await webSocketSender.SendToAllPlayers(id, response);
+      await EndRound(game);
     });
     return true;
   }
@@ -119,6 +105,62 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
+  public bool TryEvaluatePlayerGuess(string gameId, string playerGuid, string userGuess)
+  {
+    var game = gameRepository.GetGame(gameId);
+    var player = game?.Players.Find((p) => p.Guid == playerGuid);
+
+    if (
+      game?.State != GameState.RoundPlaying
+      || player == null
+      || player.RoundResults.Count == game.CurrentRound
+    )
+    {
+      return false;
+    }
+
+    var guessTime =
+      (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - game.RoundStartTimestamp) / 1000;
+
+    // See file "punctation_function.png" for visual representation
+    int score = (int)
+      MathF.Floor(
+        guessTime switch
+        {
+          < 3 => -5 * (guessTime - 3) + 150,
+          >= 3 => (100 / MathF.Pow(guessTime - 2, 0.05f)) + 50
+        }
+      );
+
+    var trackGuess = game.DrawnTracks[game.CurrentRound - 1].Guess;
+    score = userGuess switch
+    {
+      var g when g == trackGuess => score,
+      // Guessed album
+      var g when g.Split(" - ")[2] == trackGuess.Split(" - ")[2] => score / 4,
+      // Guessed artist
+      var g when g.Split(" - ")[1] == trackGuess.Split(" - ")[1] => score / 5,
+      _ => 0
+    };
+
+    player.RoundResults.Add(new RoundResult { Guess = userGuess, Score = score });
+
+    return true;
+  }
+
+  public async Task<bool> TryEndRoundIfAllGuessessSubmitted(string gameId)
+  {
+    var game = gameRepository.GetGame(gameId);
+
+    if (game?.State == GameState.RoundPlaying && HasEveryPlayerFinished(game))
+    {
+      await EndRound(game);
+      return true;
+    }
+
+    return false;
+  }
+
   private static List<Track> DrawTracksRandomly(List<Track> tracks, int count)
   {
     List<Track> drawnTracks = [];
@@ -137,5 +179,30 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return drawnTracks;
+  }
+
+  private async Task EndRound(Game game)
+  {
+    if (game.CurrentRound == game.Settings.RoundCount)
+    {
+      game.State = GameState.GameResult;
+      await EndGame(game.Id);
+      return;
+    }
+
+    game.CurrentRound++;
+    game.State = GameState.RoundSetup;
+
+    var response = new MessageWithData<int>
+    {
+      Type = MessageType.NextRound,
+      Data = game.CurrentRound
+    };
+    await webSocketSender.SendToAllPlayers(game.Id, response);
+  }
+
+  private bool HasEveryPlayerFinished(Game game)
+  {
+    return !game.Players.Exists((p) => p.RoundResults.Count != game.CurrentRound);
   }
 }

@@ -798,5 +798,81 @@
                 "trackStartUpperBound": 0.9
             }
         }
+    },
+    "startGameTestGuess": {
+        "$type": "message/startGameDto",
+        "type": "startGame",
+        "data": {
+            "tracks": [
+                {
+                    "artists": [
+                        {
+                            "name": "Erika Henningsen",
+                            "id": "3hjgA2bJfvsFAbHNM60dvG"
+                        },
+                        {
+                            "name": "Stephanie Beatriz",
+                            "id": "5PYToRCsrnvikZg3yl2JMr"
+                        },
+                        {
+                            "name": "Sam Haft",
+                            "id": "3osxpNwDgRAPs3aZZNsdV8"
+                        },
+                        {
+                            "name": "Mick Lauer",
+                            "id": "6ZiQ6uWJ2zi6EQakRR5Pkx"
+                        },
+                        {
+                            "name": "Keith David",
+                            "id": "1LPgqTHt7RmHwYtS9KQTMY"
+                        },
+                        {
+                            "name": "Blake Roman",
+                            "id": "18p5uhOP0T6w7EwYy389ej"
+                        },
+                        {
+                            "name": "Andrew Underberg",
+                            "id": "4zXroEby35IgWPERRcW4Ay"
+                        }
+                    ],
+                    "duration_ms": 177664,
+                    "name": "Happy Day In Hell",
+                    "uri": "spotify:track:57BK2VtFiJZQ8YbiCccHde",
+                    "album": {
+                        "name": "Hazbin Hotel (Original Soundtrack)",
+                        "images": [
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d0000b273058d85d25752a6701564ba06",
+                                "height": 640,
+                                "width": 640
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00001e02058d85d25752a6701564ba06",
+                                "height": 300,
+                                "width": 300
+                            },
+                            {
+                                "url": "https://i.scdn.co/image/ab67616d00004851058d85d25752a6701564ba06",
+                                "height": 64,
+                                "width": 64
+                            }
+                        ]
+                    }
+                }
+            ],
+            "gameSettings": {
+                "breakDuration": 2,
+                "trackDuration": 5,
+                "roundDuration": 20,
+                "roundCount": 5,
+                "trackStartLowerBound": 0.1,
+                "trackStartUpperBound": 0.9
+            }
+        }
+    },
+    "guess": {
+        "$type": "message/string",
+        "type": "guess",
+        "data": "Happy Day In Hell - Erika Henningsen, Stephanie Beatriz, Sam Haft, Mick Lauer, Keith David, Blake Roman, Andrew Underberg - Hazbin Hotel (Original Soundtrack)"
     }
 }
