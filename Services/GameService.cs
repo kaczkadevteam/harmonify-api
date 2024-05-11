@@ -143,6 +143,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       _ => 0
     };
 
+    player.Score += score;
     player.RoundResults.Add(new RoundResult { Guess = userGuess, Score = score });
 
     return true;
