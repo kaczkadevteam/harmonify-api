@@ -148,7 +148,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
-  public async Task<bool> TryEndRoundIfAllPlayersSubmittedGuess(string gameId)
+  public async Task<bool> TryEndRoundIfAllGuessessSubmitted(string gameId)
   {
     var game = gameRepository.GetGame(gameId);
 

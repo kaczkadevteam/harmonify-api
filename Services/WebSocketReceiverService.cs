@@ -194,7 +194,7 @@ public class WebSocketReceiverService(
         var response = new Message { Type = MessageType.Acknowledged };
 
         await WebSocketHelper.SendMessage(connection.WS, response);
-        await gameService.TryEndRoundIfAllPlayersSubmittedGuess(connection.GameId);
+        await gameService.TryEndRoundIfAllGuessessSubmitted(connection.GameId);
       }
     }
   }

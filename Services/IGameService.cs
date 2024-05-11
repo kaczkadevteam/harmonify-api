@@ -14,5 +14,5 @@ public interface IGameService
   public void HandlePlayerReconnect(string playerGuid, string gameId);
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType);
   public bool TryEvaluatePlayerGuess(string gameId, string playerGuid, string userGuess);
-  public Task<bool> TryEndRoundIfAllPlayersSubmittedGuess(string gameId);
+  public Task<bool> TryEndRoundIfAllGuessessSubmitted(string gameId);
 }
