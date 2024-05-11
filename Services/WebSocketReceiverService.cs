@@ -135,7 +135,7 @@ public class WebSocketReceiverService(
   {
     if (message.Type == MessageType.StartGame && message is MessageWithData<StartGameDto> msg)
     {
-      if (gameService.TryStartGame(connection.GameId, msg.Data))
+      if (gameService.TryStartGame(connection.GameId, msg.Data, out var timestamp))
       {
         var response = new MessageWithData<GameStartedDto>
         {
@@ -143,6 +143,7 @@ public class WebSocketReceiverService(
           Data = new GameStartedDto
           {
             GameSettings = msg.Data.GameSettings,
+            RoundStartTimestamp = timestamp,
             PossibleGuesses = msg
               .Data.Tracks.Select(
                 (track) => new DisplayedGuessDto { Guess = track.Guess, Id = track.Uri }
@@ -159,29 +160,6 @@ public class WebSocketReceiverService(
         {
           Type = MessageType.Conflict,
           ErrorMessage = "Game is already running"
-        };
-
-        await WebSocketHelper.SendMessage(connection.WS, response);
-      }
-    }
-    else if (message.Type == MessageType.StartRound)
-    {
-      if (gameService.TryStartRound(connection.GameId))
-      {
-        var response = new MessageWithData<long>
-        {
-          Type = MessageType.RoundStarted,
-          Data = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        };
-
-        await sender.SendToAllPlayers(connection.GameId, response);
-      }
-      else
-      {
-        var response = new MessageError
-        {
-          Type = MessageType.Conflict,
-          ErrorMessage = "Round is not waiting to be started"
         };
 
         await WebSocketHelper.SendMessage(connection.WS, response);

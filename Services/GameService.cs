@@ -38,39 +38,24 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return gameRepository.GameExists(id);
   }
 
-  public bool TryStartGame(string id, StartGameDto data)
+  public bool TryStartGame(string id, StartGameDto data, out long timestamp)
   {
     var game = gameRepository.GetGame(id);
 
     if (game?.State != GameState.GameSetup)
     {
+      timestamp = 0;
       return false;
     }
 
     game.Tracks = data.Tracks;
     game.DrawnTracks = DrawTracksRandomly(data.Tracks, data.GameSettings.RoundCount);
     game.Settings = data.GameSettings;
+
     game.CurrentRound = 1;
-    game.State = GameState.RoundSetup;
-    return true;
-  }
 
-  public bool TryStartRound(string id)
-  {
-    var game = gameRepository.GetGame(id);
-
-    if (game?.State != GameState.RoundSetup)
-    {
-      return false;
-    }
-
-    game.State = GameState.RoundPlaying;
-    game.RoundStartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-    Task.Run(async () =>
-    {
-      await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
-      await EndRound(game);
-    });
+    timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    StartRound(game, timestamp);
     return true;
   }
 
@@ -92,11 +77,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType)
   {
-    if (
-      messageType == MessageType.StartGame
-      || messageType == MessageType.EndGame
-      || messageType == MessageType.StartRound
-    )
+    if (messageType == MessageType.StartGame || messageType == MessageType.EndGame)
     {
       return gameRepository.GetGame(gameId)?.Host.Guid == playerGuid;
     }
@@ -181,6 +162,37 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return drawnTracks;
   }
 
+  private async Task StartNextRound(Game game)
+  {
+    game.CurrentRound++;
+
+    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    var response = new MessageWithData<RoundStartedDto>
+    {
+      Type = MessageType.NextRound,
+      Data = new RoundStartedDto
+      {
+        RoundNumber = game.CurrentRound,
+        RoundStartTimestamp = timestamp
+      }
+    };
+
+    StartRound(game, timestamp);
+    await webSocketSender.SendToAllPlayers(game.Id, response);
+  }
+
+  private void StartRound(Game game, long timestamp)
+  {
+    game.State = GameState.RoundPlaying;
+    game.RoundStartTimestamp = timestamp;
+
+    Task.Run(async () =>
+    {
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
+      await EndRound(game);
+    });
+  }
+
   private async Task EndRound(Game game)
   {
     if (game.State != GameState.RoundPlaying)
@@ -229,19 +241,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
     await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
     await StartNextRound(game);
-  }
-
-  private async Task StartNextRound(Game game)
-  {
-    game.CurrentRound++;
-    game.State = GameState.RoundSetup;
-
-    var response = new MessageWithData<int>
-    {
-      Type = MessageType.NextRound,
-      Data = game.CurrentRound
-    };
-    await webSocketSender.SendToAllPlayers(game.Id, response);
   }
 
   private static bool HasEveryPlayerFinished(Game game)
