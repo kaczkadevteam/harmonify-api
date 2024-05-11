@@ -10,17 +10,18 @@ public static class WebSocketHelper
 {
   public static async Task SendMessage(WebSocket webSocket, object message)
   {
-    byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, JsonHelper.jsonOptions);
-
-    if (webSocket.State != WebSocketState.Closed)
+    if (webSocket.State == WebSocketState.Closed)
     {
-      await webSocket.SendAsync(
-        new ArraySegment<byte>(jsonBytes),
-        WebSocketMessageType.Text,
-        true,
-        CancellationToken.None
-      );
+      return;
     }
+
+    byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(message, JsonHelper.jsonOptions);
+    await webSocket.SendAsync(
+      new ArraySegment<byte>(jsonBytes),
+      WebSocketMessageType.Text,
+      true,
+      CancellationToken.None
+    );
   }
 
   public static async Task<Message?> ReadMessage(WebSocketConnection connection)
