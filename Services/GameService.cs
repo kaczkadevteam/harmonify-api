@@ -83,8 +83,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.CurrentRound = 1;
 
     timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-    uri = game.DrawnTracks[game.CurrentRound - 1].Uri;
-    trackStart_ms = GetTrackStart(game.Settings, game.DrawnTracks[game.CurrentRound - 1]);
+    uri = game.CurrentTrack.Uri;
+    trackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack);
     StartRound(game, timestamp);
     return true;
   }
@@ -101,8 +101,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       {
         RoundNumber = game.CurrentRound,
         RoundStartTimestamp = timestamp,
-        Uri = game.DrawnTracks[game.CurrentRound - 1].Uri,
-        TrackStart_ms = GetTrackStart(game.Settings, game.DrawnTracks[game.CurrentRound - 1])
+        Uri = game.CurrentTrack.Uri,
+        TrackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack)
       }
     };
 
@@ -175,7 +175,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       Type = MessageType.NextRound,
       Data = new RoundFinishedDto
       {
-        Track = game.DrawnTracks[game.CurrentRound - 1],
+        Track = game.CurrentTrack,
         Score = player.Score,
         RoundResult = player.RoundResults.Last(),
         Players = playersDto
@@ -256,7 +256,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         }
       );
 
-    var trackGuess = game.DrawnTracks[game.CurrentRound - 1].Guess;
+    var trackGuess = game.CurrentTrack.Guess;
     score = userGuess switch
     {
       var g when g == trackGuess => score,

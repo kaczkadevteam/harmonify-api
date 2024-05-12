@@ -10,6 +10,10 @@ public class Game
   public long RoundStartTimestamp { get; set; } = 0;
   public List<Track> Tracks { get; set; } = [];
   public List<Track> DrawnTracks { get; set; } = [];
+  public Track CurrentTrack
+  {
+    get { return DrawnTracks[CurrentRound - 1]; }
+  }
   public GameSettings Settings { get; set; } =
     new GameSettings
     {
