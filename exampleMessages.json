@@ -863,9 +863,9 @@
             ],
             "gameSettings": {
                 "breakDurationBetweenTrackPlays": 2,
-                "breakDurationBetweenRounds": 10,
+                "breakDurationBetweenRounds": 5,
                 "trackDuration": 5,
-                "roundDuration": 20,
+                "roundDuration": 5,
                 "roundCount": 5,
                 "trackStartLowerBound": 0.1,
                 "trackStartUpperBound": 0.9
