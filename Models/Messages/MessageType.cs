@@ -19,6 +19,7 @@ public enum MessageType
   Acknowledged,
   Reconnected,
   ConnectionsList,
+  EndGameResults,
 
   //------ERRORS---------
   NoPlayerInGame,
