@@ -298,16 +298,14 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return drawnTracks;
   }
 
-  private int GetTrackStart(GameSettings gameSettings, Track track)
+  private static int GetTrackStart(GameSettings gameSettings, Track track)
   {
-    float lowerLimit = gameSettings.TrackStartLowerBound * track.Duration_ms;
-    float upperLimit = gameSettings.TrackStartUpperBound * track.Duration_ms;
-    float durationRange = upperLimit - lowerLimit;
-    int trackstart_ms = (int)
-      Math.Min(
-        Math.Floor(Random.Shared.NextDouble() * durationRange) + lowerLimit,
-        track.Duration_ms - gameSettings.TrackDuration * 1000
-      );
+    int lowerLimit = (int)Math.Floor(gameSettings.TrackStartLowerBound * track.Duration_ms);
+    int upperLimit = (int)Math.Floor(gameSettings.TrackStartUpperBound * track.Duration_ms);
+    int trackstart_ms = Math.Min(
+      Random.Shared.Next(lowerLimit, upperLimit),
+      track.Duration_ms - gameSettings.TrackDuration * 1000
+    );
     return trackstart_ms;
   }
 }
