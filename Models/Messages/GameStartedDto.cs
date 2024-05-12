@@ -6,4 +6,5 @@ public class GameStartedDto
 {
   public required List<DisplayedGuessDto> PossibleGuesses { get; set; }
   public required GameSettings GameSettings { get; set; }
+  public required long RoundStartTimestamp { get; init; }
 }

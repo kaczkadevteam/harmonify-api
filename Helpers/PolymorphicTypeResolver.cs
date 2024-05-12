@@ -26,6 +26,7 @@ public class PolymorphicTypeResolver : DefaultJsonTypeInfoResolver
           new JsonDerivedType(typeof(MessageWithData<CreatedGameDto>), "message/createdGameDto"),
           new JsonDerivedType(typeof(MessageWithData<StartGameDto>), "message/startGameDto"),
           new JsonDerivedType(typeof(MessageWithData<GameStartedDto>), "message/gameStartedDto"),
+          new JsonDerivedType(typeof(MessageWithData<RoundStartedDto>), "message/roundStartedDto"),
           new JsonDerivedType(
             typeof(MessageWithData<RoundFinishedDto>),
             "message/roundFinishedDto"

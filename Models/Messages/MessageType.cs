@@ -4,7 +4,6 @@ public enum MessageType
 {
   //--------INCOMING-----------
   StartGame,
-  StartRound,
   EndGame,
   CloseConnection,
   Guess,
