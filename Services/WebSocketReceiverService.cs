@@ -135,7 +135,15 @@ public class WebSocketReceiverService(
   {
     if (message.Type == MessageType.StartGame && message is MessageWithData<StartGameDto> msg)
     {
-      if (gameService.TryStartGame(connection.GameId, msg.Data, out var timestamp))
+      if (
+        gameService.TryStartGame(
+          connection.GameId,
+          msg.Data,
+          out var timestamp,
+          out var uri,
+          out var trackStart_ms
+        )
+      )
       {
         var response = new MessageWithData<GameStartedDto>
         {
@@ -148,7 +156,9 @@ public class WebSocketReceiverService(
               .Data.Tracks.Select(
                 (track) => new DisplayedGuessDto { Guess = track.Guess, Id = track.Uri }
               )
-              .ToList()
+              .ToList(),
+            Uri = uri,
+            TrackStart_ms = trackStart_ms
           }
         };
 

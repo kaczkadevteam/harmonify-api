@@ -58,13 +58,21 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     throw new NotImplementedException();
   }
 
-  public bool TryStartGame(string id, StartGameDto data, out long timestamp)
+  public bool TryStartGame(
+    string id,
+    StartGameDto data,
+    out long timestamp,
+    out string uri,
+    out int trackStart_ms
+  )
   {
     var game = gameRepository.GetGame(id);
 
     if (game?.State != GameState.GameSetup)
     {
       timestamp = 0;
+      uri = "";
+      trackStart_ms = 0;
       return false;
     }
 
@@ -75,6 +83,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.CurrentRound = 1;
 
     timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    uri = game.CurrentTrack.Uri;
+    trackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack);
     StartRound(game, timestamp);
     return true;
   }
@@ -90,7 +100,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       Data = new RoundStartedDto
       {
         RoundNumber = game.CurrentRound,
-        RoundStartTimestamp = timestamp
+        RoundStartTimestamp = timestamp,
+        Uri = game.CurrentTrack.Uri,
+        TrackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack)
       }
     };
 
@@ -163,7 +175,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       Type = MessageType.NextRound,
       Data = new RoundFinishedDto
       {
-        Track = game.DrawnTracks[game.CurrentRound - 1],
+        Track = game.CurrentTrack,
         Score = player.Score,
         RoundResult = player.RoundResults.Last(),
         Players = playersDto
@@ -244,7 +256,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         }
       );
 
-    var trackGuess = game.DrawnTracks[game.CurrentRound - 1].Guess;
+    var trackGuess = game.CurrentTrack.Guess;
     score = userGuess switch
     {
       var g when g == trackGuess => score,
@@ -284,5 +296,16 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return drawnTracks;
+  }
+
+  private static int GetTrackStart(GameSettings gameSettings, Track track)
+  {
+    int lowerLimit = (int)Math.Floor(gameSettings.TrackStartLowerBound * track.Duration_ms);
+    int upperLimit = (int)Math.Floor(gameSettings.TrackStartUpperBound * track.Duration_ms);
+    int trackstart_ms = Math.Min(
+      Random.Shared.Next(lowerLimit, upperLimit),
+      track.Duration_ms - gameSettings.TrackDuration * 1000
+    );
+    return trackstart_ms;
   }
 }
