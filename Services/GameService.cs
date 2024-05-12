@@ -175,6 +175,44 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   public async Task EndGame(string id)
   {
+    var game = gameRepository.GetGame(id);
+
+    if (game == null)
+    {
+      return;
+    }
+
+    game.State = GameState.GameFinish;
+
+    var playersDto = game
+      .Players.Select((player) => new PlayerDto { Guid = player.Guid, Score = player.Score })
+      .ToList();
+
+    await Task.WhenAll(
+      game.Players.Select(
+        async (player) =>
+        {
+          if (player.RoundResults.Count != game.CurrentRound)
+          {
+            player.RoundResults.Add(new RoundResult { Guess = "", Score = 0 });
+          }
+
+          var response = new MessageWithData<EndGameResultsDto>
+          {
+            Type = MessageType.EndGameResults,
+            Data = new EndGameResultsDto
+            {
+              Tracks = game.Tracks,
+              Score = player.Score,
+              RoundResults = player.RoundResults,
+              Players = playersDto
+            }
+          };
+
+          await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
+        }
+      )
+    );
     await webSocketSender.EndConnections(id);
     gameRepository.RemoveGame(id);
   }
