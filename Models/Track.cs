@@ -26,7 +26,6 @@ public class Track
       return guess;
     }
   }
-  public int? TrackStart_ms { get; set; }
 }
 
 public class Artist

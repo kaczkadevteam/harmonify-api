@@ -58,13 +58,21 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     throw new NotImplementedException();
   }
 
-  public bool TryStartGame(string id, StartGameDto data, out long timestamp)
+  public bool TryStartGame(
+    string id,
+    StartGameDto data,
+    out long timestamp,
+    out string uri,
+    out int trackStart_ms
+  )
   {
     var game = gameRepository.GetGame(id);
 
     if (game?.State != GameState.GameSetup)
     {
       timestamp = 0;
+      uri = "";
+      trackStart_ms = 0;
       return false;
     }
 
@@ -75,6 +83,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.CurrentRound = 1;
 
     timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    uri = game.DrawnTracks[game.CurrentRound - 1].Uri;
+    trackStart_ms = GetTrackStart(game.Settings, game.DrawnTracks[game.CurrentRound - 1]);
     StartRound(game, timestamp);
     return true;
   }
@@ -90,7 +100,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       Data = new RoundStartedDto
       {
         RoundNumber = game.CurrentRound,
-        RoundStartTimestamp = timestamp
+        RoundStartTimestamp = timestamp,
+        Uri = game.DrawnTracks[game.CurrentRound - 1].Uri,
+        TrackStart_ms = GetTrackStart(game.Settings, game.DrawnTracks[game.CurrentRound - 1])
       }
     };
 
@@ -284,5 +296,18 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return drawnTracks;
+  }
+
+  private int GetTrackStart(GameSettings gameSettings, Track track)
+  {
+    float lowerLimit = gameSettings.TrackStartLowerBound * track.Duration_ms;
+    float upperLimit = gameSettings.TrackStartUpperBound * track.Duration_ms;
+    float durationRange = upperLimit - lowerLimit;
+    int trackstart_ms = (int)
+      Math.Min(
+        Math.Floor(Random.Shared.NextDouble() * durationRange) + lowerLimit,
+        track.Duration_ms - gameSettings.TrackDuration * 1000
+      );
+    return trackstart_ms;
   }
 }
