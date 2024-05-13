@@ -214,7 +214,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
             Type = MessageType.EndGameResults,
             Data = new EndGameResultsDto
             {
-              Tracks = game.Tracks,
+              Tracks = game.DrawnTracks,
               Score = player.Score,
               RoundResults = player.RoundResults,
               Players = playersDto
