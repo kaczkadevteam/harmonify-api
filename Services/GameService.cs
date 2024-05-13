@@ -261,9 +261,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       var g when g == trackGuess => score,
       // Guessed album
-      var g when g.Split(" - ")[2] == trackGuess.Split(" - ")[2] => score / 4,
+      var g when g.Split(" - ").ElementAtOrDefault(2) == trackGuess.Split(" - ").ElementAtOrDefault(2) => score / 4,
       // Guessed artist
-      var g when g.Split(" - ")[1] == trackGuess.Split(" - ")[1] => score / 5,
+      var g when g.Split(" - ").ElementAtOrDefault(1) == trackGuess.Split(" - ").ElementAtOrDefault(1) => score / 5,
       _ => 0
     };
 
