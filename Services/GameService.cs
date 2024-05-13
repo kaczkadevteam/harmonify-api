@@ -43,6 +43,22 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     gameRepository.GetGame(id)?.Players.Add(player);
   }
 
+  public bool TryChangeName(string id, string playerGuid, string newNickname)
+  {
+    var game = gameRepository.GetGame(id);
+    if (game?.State != GameState.GameSetup)
+    {
+      return false;
+    }
+    var player = gameRepository.GetGame(id)?.Players.Find(player => player.Guid == playerGuid);
+    if (player == null)
+    {
+      return false;
+    }
+    player.Nickname = newNickname;
+    return true;
+  }
+
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType)
   {
     if (messageType == MessageType.StartGame || messageType == MessageType.EndGame)

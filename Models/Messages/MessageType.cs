@@ -7,6 +7,7 @@ public enum MessageType
   EndGame,
   CloseConnection,
   Guess,
+  ChangeName,
 
   //--------OUTGOING-----------
   CreatedGame,
@@ -19,6 +20,7 @@ public enum MessageType
   Reconnected,
   ConnectionsList,
   EndGameResults,
+  NameChanged,
 
   //------ERRORS---------
   NoPlayerInGame,
