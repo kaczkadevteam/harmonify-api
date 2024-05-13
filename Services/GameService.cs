@@ -114,10 +114,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
   {
     game.State = GameState.RoundPlaying;
     game.RoundStartTimestamp = timestamp;
+    var roundToEnd = game.CurrentRound;
 
     Task.Run(async () =>
     {
       await Task.Delay(TimeSpan.FromSeconds(game.Settings.RoundDuration));
+      if (roundToEnd != game.CurrentRound)
+      {
+        return;
+      }
       await EndRound(game);
     });
   }
@@ -261,9 +266,13 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       var g when g == trackGuess => score,
       // Guessed album
-      var g when g.Split(" - ").ElementAtOrDefault(2) == trackGuess.Split(" - ").ElementAtOrDefault(2) => score / 4,
+      var g
+        when g.Split(" - ").ElementAtOrDefault(2) == trackGuess.Split(" - ").ElementAtOrDefault(2)
+        => score / 4,
       // Guessed artist
-      var g when g.Split(" - ").ElementAtOrDefault(1) == trackGuess.Split(" - ").ElementAtOrDefault(1) => score / 5,
+      var g
+        when g.Split(" - ").ElementAtOrDefault(1) == trackGuess.Split(" - ").ElementAtOrDefault(1)
+        => score / 5,
       _ => 0
     };
 
