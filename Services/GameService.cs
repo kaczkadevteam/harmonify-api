@@ -157,7 +157,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.State = GameState.RoundFinish;
 
     var playersDto = game
-      .Players.Select((player) => new PlayerDto { Guid = player.Guid, Score = player.Score })
+      .Players.Select(
+        (player) =>
+          new PlayerDto
+          {
+            Guid = player.Guid,
+            Nickname = player.Nickname,
+            Score = player.Score
+          }
+      )
       .ToList();
 
     await Task.WhenAll(
@@ -202,7 +210,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.State = GameState.GameFinish;
 
     var playersDto = game
-      .Players.Select((player) => new PlayerDto { Guid = player.Guid, Score = player.Score })
+      .Players.Select(
+        (player) =>
+          new PlayerDto
+          {
+            Guid = player.Guid,
+            Nickname = player.Nickname,
+            Score = player.Score
+          }
+      )
       .ToList();
 
     await Task.WhenAll(

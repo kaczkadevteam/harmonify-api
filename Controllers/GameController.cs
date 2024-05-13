@@ -26,7 +26,12 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
     var createdGame = new MessageWithData<CreatedGameDto>
     {
       Type = MessageType.CreatedGame,
-      Data = new CreatedGameDto { HostGuid = player.Guid, GameId = game.Id }
+      Data = new CreatedGameDto
+      {
+        HostGuid = player.Guid,
+        Nickname = player.Nickname,
+        GameId = game.Id
+      }
     };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
     await webSocketService.StartConnection(webSocket, game.Id, player.Guid, createdGame);
@@ -53,8 +58,12 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
 
     var player = new Player();
     gameService.AddPlayer(id, player);
-
-    var response = new MessageWithData<string> { Type = MessageType.NewPlayer, Data = player.Guid };
+    var playerInfo = new PlayerInfoDto { Guid = player.Guid, Nickname = player.Nickname };
+    var response = new MessageWithData<PlayerInfoDto>
+    {
+      Type = MessageType.NewPlayer,
+      Data = playerInfo
+    };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
     await webSocketService.StartConnection(webSocket, id, player.Guid, response);
   }
