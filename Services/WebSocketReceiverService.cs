@@ -1,5 +1,4 @@
 using System.Net.WebSockets;
-using System.Text.Json;
 using Harmonify.Data;
 using Harmonify.Helpers;
 using Harmonify.Messages;
@@ -29,7 +28,11 @@ public class WebSocketReceiverService(
     connectionRepository.Add(connection);
 
     await WebSocketHelper.SendMessage(connection.WS, firstMessage);
-    await ListenForMessages(connection);
+    try
+    {
+      await ListenForMessages(connection);
+    }
+    catch (Exception) { }
   }
 
   public bool TryGetExistingConnection(
@@ -52,7 +55,10 @@ public class WebSocketReceiverService(
       return false;
     }
 
-    if (connection.WS.State != WebSocketState.Closed)
+    if (
+      connection.WS.State != WebSocketState.Closed
+      && connection.WS.State != WebSocketState.Aborted
+    )
     {
       response = new MessageError
       {
@@ -73,7 +79,11 @@ public class WebSocketReceiverService(
     connection.WS = ws;
     var response = new Message { Type = MessageType.Reconnected };
     await WebSocketHelper.SendMessage(connection.WS, response);
-    await ListenForMessages(connection);
+    try
+    {
+      await ListenForMessages(connection);
+    }
+    catch (Exception) { }
   }
 
   public string GetWsConnections()
