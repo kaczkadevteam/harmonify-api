@@ -37,6 +37,7 @@ public class PolymorphicTypeResolver : DefaultJsonTypeInfoResolver
             "message/endGameResultsDto"
           ),
           new JsonDerivedType(typeof(MessageWithData<PlayerInfoDto>), "message/playerInfoDto"),
+          new JsonDerivedType(typeof(MessageWithData<List<PlayerInfoDto>>), "message/playerList"),
           new JsonDerivedType(typeof(MessageWithData<string>), "message/string"),
           new JsonDerivedType(typeof(MessageWithData<int>), "message/int"),
           new JsonDerivedType(typeof(MessageWithData<long>), "message/long"),

@@ -28,6 +28,7 @@ public class WebSocketReceiverService(
     connectionRepository.Add(connection);
 
     await WebSocketHelper.SendMessage(connection.WS, firstMessage);
+    await gameService.SendPlayerList(gameId);
     try
     {
       await ListenForMessages(connection);
@@ -202,17 +203,7 @@ public class WebSocketReceiverService(
     {
       if (gameService.TryChangeName(connection.GameId, connection.PlayerGuid, newNickname.Data))
       {
-        var playerInfo = new PlayerInfoDto
-        {
-          Guid = connection.PlayerGuid,
-          Nickname = newNickname.Data
-        };
-        var response = new MessageWithData<PlayerInfoDto>
-        {
-          Type = MessageType.NameChanged,
-          Data = playerInfo
-        };
-        await sender.SendToAllPlayers(connection.GameId, response);
+        await gameService.SendPlayerList(connection.GameId);
       }
       else
       {

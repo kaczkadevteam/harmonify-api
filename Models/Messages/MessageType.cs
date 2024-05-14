@@ -21,6 +21,7 @@ public enum MessageType
   ConnectionsList,
   EndGameResults,
   NameChanged,
+  PlayerList,
 
   //------ERRORS---------
   NoPlayerInGame,
