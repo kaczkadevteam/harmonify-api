@@ -78,8 +78,8 @@ public class NameGenerator
   {
     string name =
       adjectives[Random.Shared.Next(adjectives.Length)]
-      + colors[Random.Shared.Next(adjectives.Length)]
-      + animals[Random.Shared.Next(adjectives.Length)]
+      + colors[Random.Shared.Next(colors.Length)]
+      + animals[Random.Shared.Next(animals.Length)]
       + Random.Shared.Next(100);
     return name;
   }
