@@ -8,8 +8,10 @@ public interface IGameService
   public Game Create(Player host);
   public bool GameExists(string id);
   public void AddPlayer(string id, Player player);
+  public bool TryChangeName(string id, string playerGuid, string newNickname);
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType);
   public void HandlePlayerReconnect(string playerGuid, string gameId);
+  public Task SendPlayerList(string gameId);
   public bool TryStartGame(
     string id,
     StartGameDto data,

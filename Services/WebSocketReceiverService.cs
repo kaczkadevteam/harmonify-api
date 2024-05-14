@@ -28,6 +28,7 @@ public class WebSocketReceiverService(
     connectionRepository.Add(connection);
 
     await WebSocketHelper.SendMessage(connection.WS, firstMessage);
+    await gameService.SendPlayerList(gameId);
     try
     {
       await ListenForMessages(connection);
@@ -193,6 +194,25 @@ public class WebSocketReceiverService(
 
         await WebSocketHelper.SendMessage(connection.WS, response);
         await gameService.TryEndRoundIfAllGuessessSubmitted(connection.GameId);
+      }
+    }
+    else if (
+      message.Type == MessageType.ChangeName
+      && message is MessageWithData<string> newNickname
+    )
+    {
+      if (gameService.TryChangeName(connection.GameId, connection.PlayerGuid, newNickname.Data))
+      {
+        await gameService.SendPlayerList(connection.GameId);
+      }
+      else
+      {
+        var response = new MessageError
+        {
+          Type = MessageType.Conflict,
+          ErrorMessage = "Name couldn't be changed"
+        };
+        await WebSocketHelper.SendMessage(connection.WS, response);
       }
     }
   }

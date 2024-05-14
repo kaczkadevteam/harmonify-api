@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Harmonify.Messages;
+using Harmonify.Models;
 
 namespace Harmonify.Helpers;
 
@@ -35,6 +36,8 @@ public class PolymorphicTypeResolver : DefaultJsonTypeInfoResolver
             typeof(MessageWithData<EndGameResultsDto>),
             "message/endGameResultsDto"
           ),
+          new JsonDerivedType(typeof(MessageWithData<PlayerInfoDto>), "message/playerInfoDto"),
+          new JsonDerivedType(typeof(MessageWithData<List<PlayerInfoDto>>), "message/playerList"),
           new JsonDerivedType(typeof(MessageWithData<string>), "message/string"),
           new JsonDerivedType(typeof(MessageWithData<int>), "message/int"),
           new JsonDerivedType(typeof(MessageWithData<long>), "message/long"),
