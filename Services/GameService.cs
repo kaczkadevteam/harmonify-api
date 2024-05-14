@@ -86,6 +86,21 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     throw new NotImplementedException();
   }
 
+  public async Task SendPlayerList(string gameId)
+  {
+    var game = gameRepository.GetGame(gameId);
+    if (game == null)
+    {
+      return;
+    }
+    var response = new MessageWithData<List<Player>>
+    {
+      Type = MessageType.PlayerList,
+      Data = game.Players
+    };
+    await webSocketSender.SendToAllPlayers(gameId, response);
+  }
+
   public bool TryStartGame(
     string id,
     StartGameDto data,
