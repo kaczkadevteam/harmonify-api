@@ -1,4 +1,5 @@
 using Harmonify.Data;
+using Harmonify.Helpers;
 using Harmonify.Messages;
 using Harmonify.Models;
 
@@ -40,7 +41,34 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   public void AddPlayer(string id, Player player)
   {
-    gameRepository.GetGame(id)?.Players.Add(player);
+    var game = gameRepository.GetGame(id);
+    if (game == null)
+    {
+      return;
+    }
+
+    while (game.Players.Any(p => p.Nickname == player.Nickname))
+    {
+      player.Nickname = NameGenerator.GetName();
+    }
+    game.Players.Add(player);
+  }
+
+  public bool TryChangeName(string id, string playerGuid, string newNickname)
+  {
+    var game = gameRepository.GetGame(id);
+    if (game?.State != GameState.GameSetup)
+    {
+      return false;
+    }
+    var player = game.Players.Find(player => player.Guid == playerGuid);
+    var nicknameAlreadyUsed = game.Players.Any(player => player.Nickname == newNickname);
+    if (player == null || nicknameAlreadyUsed)
+    {
+      return false;
+    }
+    player.Nickname = newNickname;
+    return true;
   }
 
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType)
@@ -157,7 +185,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.State = GameState.RoundFinish;
 
     var playersDto = game
-      .Players.Select((player) => new PlayerDto { Guid = player.Guid, Score = player.Score })
+      .Players.Select(
+        (player) =>
+          new PlayerDto
+          {
+            Guid = player.Guid,
+            Nickname = player.Nickname,
+            Score = player.Score
+          }
+      )
       .ToList();
 
     await Task.WhenAll(
@@ -202,7 +238,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.State = GameState.GameFinish;
 
     var playersDto = game
-      .Players.Select((player) => new PlayerDto { Guid = player.Guid, Score = player.Score })
+      .Players.Select(
+        (player) =>
+          new PlayerDto
+          {
+            Guid = player.Guid,
+            Nickname = player.Nickname,
+            Score = player.Score
+          }
+      )
       .ToList();
 
     await Task.WhenAll(
