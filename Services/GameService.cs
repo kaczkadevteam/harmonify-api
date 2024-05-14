@@ -1,4 +1,5 @@
 using Harmonify.Data;
+using Harmonify.Helpers;
 using Harmonify.Messages;
 using Harmonify.Models;
 
@@ -40,7 +41,17 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   public void AddPlayer(string id, Player player)
   {
-    gameRepository.GetGame(id)?.Players.Add(player);
+    var game = gameRepository.GetGame(id);
+    if (game == null)
+    {
+      return;
+    }
+
+    while (game.Players.Any(p => p.Nickname == player.Nickname))
+    {
+      player.Nickname = NameGenerator.GetName();
+    }
+    game.Players.Add(player);
   }
 
   public bool TryChangeName(string id, string playerGuid, string newNickname)
@@ -50,8 +61,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       return false;
     }
-    var player = gameRepository.GetGame(id)?.Players.Find(player => player.Guid == playerGuid);
-    if (player == null)
+    var player = game.Players.Find(player => player.Guid == playerGuid);
+    var nicknameAlreadyUsed = game.Players.Any(player => player.Nickname == newNickname);
+    if (player == null || nicknameAlreadyUsed)
     {
       return false;
     }
