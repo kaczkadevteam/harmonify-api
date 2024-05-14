@@ -93,10 +93,16 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       return;
     }
-    var response = new MessageWithData<List<Player>>
+    var response = new MessageWithData<List<PlayerInfoDto>>
     {
       Type = MessageType.PlayerList,
-      Data = game.Players
+      Data = game
+        .Players.Select(player => new PlayerInfoDto
+        {
+          Guid = player.Guid,
+          Nickname = player.Nickname
+        })
+        .ToList()
     };
     await webSocketSender.SendToAllPlayers(gameId, response);
   }
