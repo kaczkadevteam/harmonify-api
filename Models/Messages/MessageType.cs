@@ -8,6 +8,8 @@ public enum MessageType
   CloseConnection,
   Guess,
   ChangeName,
+  PauseGame,
+  UnPauseGame,
 
   //--------OUTGOING-----------
   CreatedGame,
