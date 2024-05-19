@@ -112,7 +112,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     StartGameDto data,
     out long timestamp,
     out string uri,
-    out int trackStart_ms
+    out string preview_url
   )
   {
     var game = gameRepository.GetGame(id);
@@ -121,7 +121,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       timestamp = 0;
       uri = "";
-      trackStart_ms = 0;
+      preview_url = "";
       return false;
     }
 
@@ -133,7 +133,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
     timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     uri = game.CurrentTrack.Uri;
-    trackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack);
+    preview_url = game.CurrentTrack.Preview_url;
     StartRound(game, timestamp);
     return true;
   }
@@ -151,7 +151,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         RoundNumber = game.CurrentRound,
         RoundStartTimestamp = timestamp,
         Uri = game.CurrentTrack.Uri,
-        TrackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack)
+        TrackStart_ms = 0,
+        Preview_url = game.CurrentTrack.Preview_url
       }
     };
 
@@ -370,16 +371,5 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return drawnTracks;
-  }
-
-  private static int GetTrackStart(GameSettings gameSettings, Track track)
-  {
-    int lowerLimit = (int)Math.Floor(gameSettings.TrackStartLowerBound * track.Duration_ms);
-    int upperLimit = (int)Math.Floor(gameSettings.TrackStartUpperBound * track.Duration_ms);
-    int trackstart_ms = Math.Min(
-      Random.Shared.Next(lowerLimit, upperLimit),
-      track.Duration_ms - gameSettings.TrackDuration * 1000
-    );
-    return trackstart_ms;
   }
 }

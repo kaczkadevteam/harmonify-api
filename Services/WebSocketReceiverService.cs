@@ -152,7 +152,7 @@ public class WebSocketReceiverService(
           msg.Data,
           out var timestamp,
           out var uri,
-          out var trackStart_ms
+          out var preview_url
         )
       )
       {
@@ -169,7 +169,8 @@ public class WebSocketReceiverService(
               )
               .ToList(),
             Uri = uri,
-            TrackStart_ms = trackStart_ms
+            TrackStart_ms = 0,
+            Preview_url = preview_url
           }
         };
 

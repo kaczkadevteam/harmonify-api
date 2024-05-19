@@ -17,7 +17,7 @@ public interface IGameService
     StartGameDto data,
     out long timestamp,
     out string uri,
-    out int trackStart_ms
+    out string preview_url
   );
   public Task<bool> TryEndRoundIfAllGuessessSubmitted(string gameId);
   public Task EndGame(string id);

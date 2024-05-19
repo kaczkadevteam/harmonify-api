@@ -7,6 +7,7 @@ public class Track
   public required string Name { get; init; }
   public required string Uri { get; init; }
   public required Album Album { get; init; }
+  public required string Preview_url { get; init; }
   private string? guess;
   public string Guess
   {
