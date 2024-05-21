@@ -24,6 +24,8 @@ public enum MessageType
   EndGameResults,
   NameChanged,
   PlayerList,
+  GamePaused,
+  GameUnPaused,
 
   //------ERRORS---------
   NoPlayerInGame,

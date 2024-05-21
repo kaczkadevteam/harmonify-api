@@ -140,6 +140,11 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   private async Task StartNextRound(Game game)
   {
+    if (game.State == GameState.GamePause)
+    {
+      return;
+    }
+
     game.CurrentRound++;
 
     var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -237,6 +242,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
     var response = new Message { Type = MessageType.Acknowledged };
     await webSocketSender.SendToPlayer(hostGuid, gameId, response);
+    response = new Message { Type = MessageType.GameUnPaused };
+    await webSocketSender.SendToAllPlayers(gameId, response);
     game.State = GameState.RoundFinish;
     await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
     await StartNextRound(game);
@@ -245,13 +252,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
   public async Task PauseGame(string gameId, string hostGuid)
   {
     var game = gameRepository.GetGame(gameId);
-    if (game == null || game.Host.Guid != hostGuid)
+    if (game == null || game.Host.Guid != hostGuid || game.State == GameState.GamePause)
     {
       return;
     }
     game.State = GameState.GamePause;
     var response = new Message { Type = MessageType.Acknowledged };
     await webSocketSender.SendToPlayer(hostGuid, gameId, response);
+    response = new Message { Type = MessageType.GamePaused };
+    await webSocketSender.SendToAllPlayers(gameId, response);
   }
 
   private async Task SendPlayerRoundResult(Game game, Player player, List<PlayerDto> playersDto)
