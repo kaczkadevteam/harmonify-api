@@ -232,7 +232,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     await StartNextRound(game);
   }
 
-  public async Task UnPauseGame(string gameId, string hostGuid)
+  public async Task ResumeGame(string gameId, string hostGuid)
   {
     var game = gameRepository.GetGame(gameId);
     if (game == null || game.Host.Guid != hostGuid)
@@ -242,7 +242,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
     var response = new Message { Type = MessageType.Acknowledged };
     await webSocketSender.SendToPlayer(hostGuid, gameId, response);
-    response = new Message { Type = MessageType.GameUnPaused };
+    response = new Message { Type = MessageType.GameResumed };
     await webSocketSender.SendToAllPlayers(gameId, response);
     game.State = GameState.RoundFinish;
     await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));

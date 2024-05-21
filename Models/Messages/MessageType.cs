@@ -9,7 +9,7 @@ public enum MessageType
   Guess,
   ChangeName,
   PauseGame,
-  UnPauseGame,
+  ResumeGame,
 
   //--------OUTGOING-----------
   CreatedGame,
@@ -25,7 +25,7 @@ public enum MessageType
   NameChanged,
   PlayerList,
   GamePaused,
-  GameUnPaused,
+  GameResumed,
 
   //------ERRORS---------
   NoPlayerInGame,

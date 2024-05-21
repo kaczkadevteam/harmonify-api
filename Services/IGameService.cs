@@ -13,7 +13,7 @@ public interface IGameService
   public void HandlePlayerReconnect(string playerGuid, string gameId);
   public Task SendPlayerList(string gameId);
   public Task PauseGame(string gameId, string hostGuid);
-  public Task UnPauseGame(string gameId, string hostGuid);
+  public Task ResumeGame(string gameId, string hostGuid);
   public bool TryStartGame(
     string id,
     StartGameDto data,

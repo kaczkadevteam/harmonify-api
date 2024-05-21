@@ -141,9 +141,9 @@ public class WebSocketReceiverService(
         await gameService.PauseGame(connection.GameId, connection.PlayerGuid);
       }
 
-      if (message.Type == MessageType.UnPauseGame)
+      if (message.Type == MessageType.ResumeGame)
       {
-        await gameService.UnPauseGame(connection.GameId, connection.PlayerGuid);
+        await gameService.ResumeGame(connection.GameId, connection.PlayerGuid);
       }
 
       await HandleIncomingMessage(connection, message);
