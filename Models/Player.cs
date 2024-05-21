@@ -17,9 +17,3 @@ public class Player
     Nickname = NameGenerator.GetName();
   }
 }
-
-public class RoundResult
-{
-  public required int Score { get; set; }
-  public required string Guess { get; set; }
-}
