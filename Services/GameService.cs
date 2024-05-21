@@ -213,7 +213,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
           {
             Guid = player.Guid,
             Nickname = player.Nickname,
-            Score = player.Score
+            Score = player.Score,
+            RoundResults = player.RoundResults
           }
       )
       .ToList();
@@ -243,13 +244,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     var response = new MessageWithData<RoundFinishedDto>
     {
       Type = MessageType.NextRound,
-      Data = new RoundFinishedDto
-      {
-        Track = game.CurrentTrack,
-        Score = player.Score,
-        RoundResult = player.RoundResults.Last(),
-        Players = playersDto
-      }
+      Data = new RoundFinishedDto { Track = game.CurrentTrack, Players = playersDto }
     };
 
     await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
@@ -273,7 +268,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
           {
             Guid = player.Guid,
             Nickname = player.Nickname,
-            Score = player.Score
+            Score = player.Score,
+            RoundResults = player.RoundResults
           }
       )
       .ToList();
@@ -297,13 +293,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
           var response = new MessageWithData<EndGameResultsDto>
           {
             Type = MessageType.EndGameResults,
-            Data = new EndGameResultsDto
-            {
-              Tracks = game.DrawnTracks,
-              Score = player.Score,
-              RoundResults = player.RoundResults,
-              Players = playersDto
-            }
+            Data = new EndGameResultsDto { Tracks = game.DrawnTracks, Players = playersDto }
           };
 
           await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
