@@ -240,9 +240,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
-    var response = new Message { Type = MessageType.Acknowledged };
-    await webSocketSender.SendToPlayer(hostGuid, gameId, response);
-    response = new Message { Type = MessageType.GameResumed };
+    var response = new Message { Type = MessageType.GameResumed };
     await webSocketSender.SendToAllPlayers(gameId, response);
     game.State = GameState.RoundFinish;
     await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
@@ -257,9 +255,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
     game.State = GameState.GamePause;
-    var response = new Message { Type = MessageType.Acknowledged };
-    await webSocketSender.SendToPlayer(hostGuid, gameId, response);
-    response = new Message { Type = MessageType.GamePaused };
+    var response = new Message { Type = MessageType.GamePaused };
     await webSocketSender.SendToAllPlayers(gameId, response);
   }
 
