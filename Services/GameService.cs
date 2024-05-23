@@ -235,7 +235,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
   public async Task ResumeGame(string gameId, string hostGuid)
   {
     var game = gameRepository.GetGame(gameId);
-    if (game == null || game.Host.Guid != hostGuid)
+    if (game == null || game.Host.Guid != hostGuid || game.State != GameState.GamePause)
     {
       return;
     }
