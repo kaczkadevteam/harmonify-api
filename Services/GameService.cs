@@ -208,13 +208,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       await EndGame(game.Id);
       return;
     }
-
-    if (game.State == GameState.GamePause)
-    {
-      return;
-    }
-
-    game.State = GameState.RoundFinish;
     game.Players.ForEach((player) => AssertPlayerHasAllRoundResults(player, game.CurrentRound));
 
     var playersDto = game
@@ -237,6 +230,11 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     };
     await webSocketSender.SendToAllPlayers(game.Id, response);
 
+    if (game.State == GameState.GamePause)
+    {
+      return;
+    }
+    game.State = GameState.RoundFinish;
     _ = Task.Run(async () =>
     {
       await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
