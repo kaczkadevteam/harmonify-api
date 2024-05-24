@@ -206,6 +206,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
     game.State = GameState.RoundFinish;
 
+    game.Players.ForEach((player) => AssertPlayerHasAllRoundResults(player, game.CurrentRound));
+
     var playersDto = game
       .Players.Select(
         (player) =>
@@ -219,17 +221,20 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       )
       .ToList();
 
-    await Task.WhenAll(
-      game.Players.Select(async (player) => await SendPlayerRoundResult(game, player, playersDto))
-    );
+    var response = new MessageWithData<RoundFinishedDto>
+    {
+      Type = MessageType.NextRound,
+      Data = new RoundFinishedDto { Track = game.CurrentTrack, Players = playersDto }
+    };
+    await webSocketSender.SendToAllPlayers(game.Id, response);
 
     await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
     await StartNextRound(game);
   }
 
-  private async Task SendPlayerRoundResult(Game game, Player player, List<PlayerDto> playersDto)
+  private static void AssertPlayerHasAllRoundResults(Player player, int currentRound)
   {
-    if (player.RoundResults.Count != game.CurrentRound)
+    while (player.RoundResults.Count < currentRound)
     {
       player.RoundResults.Add(
         new RoundResult
@@ -240,14 +245,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         }
       );
     }
-
-    var response = new MessageWithData<RoundFinishedDto>
-    {
-      Type = MessageType.NextRound,
-      Data = new RoundFinishedDto { Track = game.CurrentTrack, Players = playersDto }
-    };
-
-    await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
   }
 
   public async Task EndGame(string id)
