@@ -112,7 +112,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     StartGameDto data,
     out long timestamp,
     out string uri,
-    out int trackStart_ms
+    out string preview_url
   )
   {
     var game = gameRepository.GetGame(id);
@@ -121,7 +121,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       timestamp = 0;
       uri = "";
-      trackStart_ms = 0;
+      preview_url = "";
       return false;
     }
 
@@ -133,7 +133,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
     timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     uri = game.CurrentTrack.Uri;
-    trackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack);
+    preview_url = game.CurrentTrack.Preview_url;
     StartRound(game, timestamp);
     return true;
   }
@@ -142,7 +142,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
   {
     if (game.State == GameState.GamePause)
     {
-      Console.WriteLine("StartNextRound game.State == GamePause");
       return;
     }
 
@@ -157,7 +156,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         RoundNumber = game.CurrentRound,
         RoundStartTimestamp = timestamp,
         Uri = game.CurrentTrack.Uri,
-        TrackStart_ms = GetTrackStart(game.Settings, game.CurrentTrack)
+        TrackStart_ms = 0,
+        Preview_url = game.CurrentTrack.Preview_url
       }
     };
 
@@ -209,6 +209,14 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
+    if (game.State == GameState.GamePause)
+    {
+      return;
+    }
+
+    game.State = GameState.RoundFinish;
+    game.Players.ForEach((player) => AssertPlayerHasAllRoundResults(player, game.CurrentRound));
+
     var playersDto = game
       .Players.Select(
         (player) =>
@@ -216,19 +224,18 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
           {
             Guid = player.Guid,
             Nickname = player.Nickname,
-            Score = player.Score
+            Score = player.Score,
+            RoundResults = player.RoundResults
           }
       )
       .ToList();
 
-    await Task.WhenAll(
-      game.Players.Select(async (player) => await SendPlayerRoundResult(game, player, playersDto))
-    );
-    if (game.State == GameState.GamePause)
+    var response = new MessageWithData<RoundFinishedDto>
     {
-      return;
-    }
-    game.State = GameState.RoundFinish;
+      Type = MessageType.NextRound,
+      Data = new RoundFinishedDto { Track = game.CurrentTrack, Players = playersDto }
+    };
+    await webSocketSender.SendToAllPlayers(game.Id, response);
 
     _ = Task.Run(async () =>
     {
@@ -267,26 +274,19 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     await webSocketSender.SendToAllPlayers(gameId, response);
   }
 
-  private async Task SendPlayerRoundResult(Game game, Player player, List<PlayerDto> playersDto)
+  private static void AssertPlayerHasAllRoundResults(Player player, int currentRound)
   {
-    if (player.RoundResults.Count != game.CurrentRound)
+    while (player.RoundResults.Count < currentRound)
     {
-      player.RoundResults.Add(new RoundResult { Guess = "", Score = 0 });
+      player.RoundResults.Add(
+        new RoundResult
+        {
+          Guess = "",
+          Score = 0,
+          GuessLevel = GuessLevel.None
+        }
+      );
     }
-
-    var response = new MessageWithData<RoundFinishedDto>
-    {
-      Type = MessageType.NextRound,
-      Data = new RoundFinishedDto
-      {
-        Track = game.CurrentTrack,
-        Score = player.Score,
-        RoundResult = player.RoundResults.Last(),
-        Players = playersDto
-      }
-    };
-
-    await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
   }
 
   public async Task EndGame(string id)
@@ -307,7 +307,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
           {
             Guid = player.Guid,
             Nickname = player.Nickname,
-            Score = player.Score
+            Score = player.Score,
+            RoundResults = player.RoundResults
           }
       )
       .ToList();
@@ -318,19 +319,20 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         {
           if (player.RoundResults.Count != game.CurrentRound)
           {
-            player.RoundResults.Add(new RoundResult { Guess = "", Score = 0 });
+            player.RoundResults.Add(
+              new RoundResult
+              {
+                Guess = "",
+                Score = 0,
+                GuessLevel = GuessLevel.None
+              }
+            );
           }
 
           var response = new MessageWithData<EndGameResultsDto>
           {
             Type = MessageType.EndGameResults,
-            Data = new EndGameResultsDto
-            {
-              Tracks = game.DrawnTracks,
-              Score = player.Score,
-              RoundResults = player.RoundResults,
-              Players = playersDto
-            }
+            Data = new EndGameResultsDto { Tracks = game.DrawnTracks, Players = playersDto }
           };
 
           await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
@@ -369,22 +371,29 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       );
 
     var trackGuess = game.CurrentTrack.Guess;
-    score = userGuess switch
+    (score, var guessLeel) = userGuess switch
     {
-      var g when g == trackGuess => score,
+      var g when g == trackGuess => (score, GuessLevel.Full),
       // Guessed album
       var g
         when g.Split(" - ").ElementAtOrDefault(2) == trackGuess.Split(" - ").ElementAtOrDefault(2)
-        => score / 4,
+        => (score / 4, GuessLevel.Album),
       // Guessed artist
       var g
         when g.Split(" - ").ElementAtOrDefault(1) == trackGuess.Split(" - ").ElementAtOrDefault(1)
-        => score / 5,
-      _ => 0
+        => (score / 5, GuessLevel.Artist),
+      _ => (0, GuessLevel.None)
     };
 
     player.Score += score;
-    player.RoundResults.Add(new RoundResult { Guess = userGuess, Score = score });
+    player.RoundResults.Add(
+      new RoundResult
+      {
+        Guess = userGuess,
+        Score = score,
+        GuessLevel = guessLeel
+      }
+    );
 
     return true;
   }
@@ -412,16 +421,5 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
 
     return drawnTracks;
-  }
-
-  private static int GetTrackStart(GameSettings gameSettings, Track track)
-  {
-    int lowerLimit = (int)Math.Floor(gameSettings.TrackStartLowerBound * track.Duration_ms);
-    int upperLimit = (int)Math.Floor(gameSettings.TrackStartUpperBound * track.Duration_ms);
-    int trackstart_ms = Math.Min(
-      Random.Shared.Next(lowerLimit, upperLimit),
-      track.Duration_ms - gameSettings.TrackDuration * 1000
-    );
-    return trackstart_ms;
   }
 }

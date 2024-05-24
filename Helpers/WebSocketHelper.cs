@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Harmonify.Messages;
 using Harmonify.Models;
+using Harmonify.Services;
 
 namespace Harmonify.Helpers;
 
@@ -48,8 +49,16 @@ public static class WebSocketHelper
       Array.Clear(connection.Buffer);
     } while (!receiveResult.EndOfMessage && messagePartsCount < WebsocketMessagePartsLimit);
 
-    if (messagePartsCount > WebsocketMessagePartsLimit)
+    if (messagePartsCount >= WebsocketMessagePartsLimit)
     {
+      while (!receiveResult.EndOfMessage)
+      {
+        receiveResult = await connection.WS.ReceiveAsync(
+          new ArraySegment<byte>(connection.Buffer),
+          CancellationToken.None
+        );
+        Array.Clear(connection.Buffer);
+      }
       return new MessageError
       {
         Type = MessageType.DataTooLarge,

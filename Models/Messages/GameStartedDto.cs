@@ -9,4 +9,5 @@ public class GameStartedDto
   public required long RoundStartTimestamp { get; init; }
   public required int TrackStart_ms { get; init; }
   public required string Uri { get; init; }
+  public required string Preview_url { get; init; }
 }
