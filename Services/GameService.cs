@@ -142,6 +142,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
   {
     if (game.State == GameState.GamePause)
     {
+      Console.WriteLine("StartNextRound game.State == GamePause");
       return;
     }
 
@@ -228,8 +229,12 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
     game.State = GameState.RoundFinish;
-    await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
-    await StartNextRound(game);
+
+    _ = Task.Run(async () =>
+    {
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
+      await StartNextRound(game);
+    });
   }
 
   public async Task ResumeGame(string gameId, string hostGuid)
@@ -243,8 +248,11 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     var response = new Message { Type = MessageType.GameResumed };
     await webSocketSender.SendToAllPlayers(gameId, response);
     game.State = GameState.RoundFinish;
-    await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
-    await StartNextRound(game);
+    _ = Task.Run(async () =>
+    {
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
+      await StartNextRound(game);
+    });
   }
 
   public async Task PauseGame(string gameId, string hostGuid)
