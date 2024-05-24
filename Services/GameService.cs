@@ -221,9 +221,12 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       )
       .ToList();
 
-    await Task.WhenAll(
-      game.Players.Select(async (player) => await SendPlayerRoundResult(game, player, playersDto))
-    );
+    var response = new MessageWithData<RoundFinishedDto>
+    {
+      Type = MessageType.NextRound,
+      Data = new RoundFinishedDto { Track = game.CurrentTrack, Players = playersDto }
+    };
+    await webSocketSender.SendToAllPlayers(game.Id, response);
 
     await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
     await StartNextRound(game);
@@ -242,17 +245,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         }
       );
     }
-  }
-
-  private async Task SendPlayerRoundResult(Game game, Player player, List<PlayerDto> playersDto)
-  {
-    var response = new MessageWithData<RoundFinishedDto>
-    {
-      Type = MessageType.NextRound,
-      Data = new RoundFinishedDto { Track = game.CurrentTrack, Players = playersDto }
-    };
-
-    await webSocketSender.SendToPlayer(player.Guid, game.Id, response);
   }
 
   public async Task EndGame(string id)
