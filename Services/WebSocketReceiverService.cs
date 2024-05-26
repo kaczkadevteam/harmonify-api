@@ -138,7 +138,7 @@ public class WebSocketReceiverService(
 
       if (message.Type == MessageType.QuitGame)
       {
-        await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
+        await gameService.QuitGame(connection.GameId, connection.PlayerGuid, connection.WS);
       }
 
       await HandleIncomingMessage(connection, message);

@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 using System.Numerics;
 using Harmonify.Data;
 using Harmonify.Helpers;
@@ -72,7 +73,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
-  public async Task QuitGame(string gameId, string playerGuid)
+  public async Task QuitGame(string gameId, string playerGuid, WebSocket ws)
   {
     var game = gameRepository.GetGame(gameId);
     if (game == null)
@@ -101,7 +102,9 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       Type = MessageType.EndGameResults,
       Data = new EndGameResultsDto { Players = playersDto, Tracks = game.DrawnTracks }
     };
+
     await webSocketSender.SendToPlayer(playerGuid, gameId, response);
+    await WebSocketHelper.CloseSafely(ws);
     game.Players.Remove(player);
 
     var playerInfo = new MessageWithData<List<PlayerInfoDto>>
