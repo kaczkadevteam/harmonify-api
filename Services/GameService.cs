@@ -1,3 +1,4 @@
+using System.Numerics;
 using Harmonify.Data;
 using Harmonify.Helpers;
 using Harmonify.Messages;
@@ -69,6 +70,52 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
     player.Nickname = newNickname;
     return true;
+  }
+
+  public async Task QuitGame(string gameId, string playerGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    if (game == null)
+    {
+      return;
+    }
+    var player = game.Players.Find(player => player.Guid == playerGuid);
+    if (player == null)
+    {
+      return;
+    }
+    var playersDto = game
+      .Players.Select(
+        (player) =>
+          new PlayerDto
+          {
+            Guid = player.Guid,
+            Nickname = player.Nickname,
+            Score = player.Score,
+            RoundResults = player.RoundResults
+          }
+      )
+      .ToList();
+    var response = new MessageWithData<EndGameResultsDto>
+    {
+      Type = MessageType.EndGameResults,
+      Data = new EndGameResultsDto { Players = playersDto, Tracks = game.DrawnTracks }
+    };
+    await webSocketSender.SendToPlayer(playerGuid, gameId, response);
+    game.Players.Remove(player);
+
+    var playerInfo = new MessageWithData<List<PlayerInfoDto>>
+    {
+      Type = MessageType.PlayerList,
+      Data = game
+        .Players.Select(player => new PlayerInfoDto
+        {
+          Guid = player.Guid,
+          Nickname = player.Nickname
+        })
+        .ToList()
+    };
+    await webSocketSender.SendToAllPlayers(gameId, playerInfo);
   }
 
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType)
