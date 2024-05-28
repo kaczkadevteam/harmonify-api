@@ -8,6 +8,8 @@ public enum MessageType
   CloseConnection,
   Guess,
   ChangeName,
+  PauseGame,
+  ResumeGame,
 
   //--------OUTGOING-----------
   CreatedGame,
@@ -22,6 +24,8 @@ public enum MessageType
   EndGameResults,
   NameChanged,
   PlayerList,
+  GamePaused,
+  GameResumed,
 
   //------ERRORS---------
   NoPlayerInGame,

@@ -140,6 +140,11 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   private async Task StartNextRound(Game game)
   {
+    if (game.State == GameState.GamePause)
+    {
+      return;
+    }
+
     game.CurrentRound++;
 
     var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -192,7 +197,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
   private async Task EndRound(Game game)
   {
-    if (game.State != GameState.RoundPlaying)
+    if (game.State != GameState.RoundPlaying && game.State != GameState.GamePause)
     {
       return;
     }
@@ -203,9 +208,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       await EndGame(game.Id);
       return;
     }
-
-    game.State = GameState.RoundFinish;
-
     game.Players.ForEach((player) => AssertPlayerHasAllRoundResults(player, game.CurrentRound));
 
     var playersDto = game
@@ -228,8 +230,46 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     };
     await webSocketSender.SendToAllPlayers(game.Id, response);
 
-    await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
-    await StartNextRound(game);
+    if (game.State == GameState.GamePause)
+    {
+      return;
+    }
+    game.State = GameState.RoundFinish;
+    _ = Task.Run(async () =>
+    {
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
+      await StartNextRound(game);
+    });
+  }
+
+  public async Task ResumeGame(string gameId, string hostGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    if (game == null || game.Host.Guid != hostGuid || game.State != GameState.GamePause)
+    {
+      return;
+    }
+
+    var response = new Message { Type = MessageType.GameResumed };
+    await webSocketSender.SendToAllPlayers(gameId, response);
+    game.State = GameState.RoundFinish;
+    _ = Task.Run(async () =>
+    {
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
+      await StartNextRound(game);
+    });
+  }
+
+  public async Task PauseGame(string gameId, string hostGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    if (game == null || game.Host.Guid != hostGuid || game.State == GameState.GamePause)
+    {
+      return;
+    }
+    game.State = GameState.GamePause;
+    var response = new Message { Type = MessageType.GamePaused };
+    await webSocketSender.SendToAllPlayers(gameId, response);
   }
 
   private static void AssertPlayerHasAllRoundResults(Player player, int currentRound)

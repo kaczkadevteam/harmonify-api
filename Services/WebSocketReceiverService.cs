@@ -136,6 +136,16 @@ public class WebSocketReceiverService(
         return;
       }
 
+      if (message.Type == MessageType.PauseGame)
+      {
+        await gameService.PauseGame(connection.GameId, connection.PlayerGuid);
+      }
+
+      if (message.Type == MessageType.ResumeGame)
+      {
+        await gameService.ResumeGame(connection.GameId, connection.PlayerGuid);
+      }
+
       await HandleIncomingMessage(connection, message);
     }
 
