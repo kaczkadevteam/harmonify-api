@@ -87,16 +87,6 @@ public class WebSocketReceiverService(
     catch (Exception) { }
   }
 
-  public string GetWsConnections()
-  {
-    string data = "";
-    foreach (var item in connectionRepository.GetAll())
-    {
-      data = data + "{" + item.ToString() + "}\n\n";
-    }
-    return data;
-  }
-
   public async Task ListenForMessages(WebSocketConnection connection)
   {
     while (true)

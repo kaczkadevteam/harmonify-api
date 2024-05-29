@@ -97,17 +97,6 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
     }
   }
 
-  [HttpGet("game/ws")]
-  public IActionResult GetWsConnections()
-  {
-    var response = new MessageWithData<string>
-    {
-      Type = MessageType.ConnectionsList,
-      Data = webSocketService.GetWsConnections()
-    };
-    return Ok(response);
-  }
-
   private async Task RespondNotWebSocketConnection()
   {
     HttpContext.Response.StatusCode = 426;
