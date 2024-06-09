@@ -2,6 +2,22 @@
 
 <div align="right">
 
+## v1.0.1 (2024-06-09)
+
+</div>
+
+## Description
+
+Fixed game pause not working correctly
+
+## What's Changed
+
+-   Fix/dev 131 - Pause breaking game flow by @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/25
+
+**Full Changelog**: https://github.com/kaczkadevteam/harmonify-api/compare/v1.0.0...v1.0.1
+
+<div align="right">
+
 ## v1.0.0 (2024-05-29)
 
 </div>
