@@ -138,13 +138,25 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
+  private async Task WaitAndStartNextRound(Game game)
+  {
+    await Task.Run(async () =>
+    {
+      if (game.IsPaused)
+        return;
+
+      var startDate = DateTime.Now;
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
+
+      if (game.LastPauseDate > startDate)
+        return;
+
+      await StartNextRound(game);
+    });
+  }
+
   private async Task StartNextRound(Game game)
   {
-    if (game.IsPaused)
-    {
-      return;
-    }
-
     game.CurrentRound++;
 
     var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -232,17 +244,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     };
     await webSocketSender.SendToAllPlayers(game.Id, response);
 
-    _ = Task.Run(async () =>
-    {
-      var startDate = DateTime.Now;
-      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
-      if (game.LastPauseDate > startDate)
-      {
-        return;
-      }
-
-      await StartNextRound(game);
-    });
+    _ = WaitAndStartNextRound(game);
   }
 
   public async Task ResumeGame(string gameId, string hostGuid)
@@ -258,17 +260,10 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     var response = new Message { Type = MessageType.GameResumed };
     await webSocketSender.SendToAllPlayers(gameId, response);
 
-    _ = Task.Run(async () =>
+    if (game.State == GameState.RoundFinish)
     {
-      var startDate = DateTime.Now;
-      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
-      if (game.LastPauseDate > startDate)
-      {
-        return;
-      }
-
-      await StartNextRound(game);
-    });
+      _ = WaitAndStartNextRound(game);
+    }
   }
 
   public async Task PauseGame(string gameId, string hostGuid)
