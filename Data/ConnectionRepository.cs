@@ -27,6 +27,16 @@ public class ConnectionRepository : IConnectionRepository
     return webSocketConnections;
   }
 
+  public void RemoveByPlayerGuid(string playerGuid)
+  {
+    var connection = webSocketConnections.Find((conn) => conn.PlayerGuid == playerGuid);
+
+    if (connection != null)
+    {
+      webSocketConnections.Remove(connection);
+    }
+  }
+
   public void RemoveAllByGameId(string gameId)
   {
     webSocketConnections.RemoveAll((conn) => conn.GameId == gameId);
