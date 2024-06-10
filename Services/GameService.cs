@@ -84,6 +84,12 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
+    if (player.Guid == game.Host.Guid && game.State == GameState.GameSetup)
+    {
+      await RemoveGameAndConnections(game.Id);
+      return;
+    }
+
     if (game.State == GameState.RoundPlaying || game.State == GameState.RoundFinish)
     {
       var playersDto = game
@@ -350,8 +356,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
-    game.State = GameState.GameFinish;
-
     var playersDto = game
       .Players.Select(
         (player) =>
@@ -379,8 +383,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         }
       )
     );
-    await webSocketSender.EndConnections(id);
-    gameRepository.RemoveGame(id);
+
+    game.State = GameState.GameFinish;
+    await RemoveGameAndConnections(game.Id);
+  }
+
+  private async Task RemoveGameAndConnections(string gameId)
+  {
+    await webSocketSender.EndConnections(gameId);
+    gameRepository.RemoveGame(gameId);
   }
 
   public bool TryEvaluatePlayerGuess(string gameId, string playerGuid, string userGuess)
