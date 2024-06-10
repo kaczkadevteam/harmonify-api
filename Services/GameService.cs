@@ -84,25 +84,27 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
-    var playersDto = game
-      .Players.Select(
-        (player) =>
-          new PlayerDto
-          {
-            Guid = player.Guid,
-            Nickname = player.Nickname,
-            Score = player.Score,
-            RoundResults = player.RoundResults
-          }
-      )
-      .ToList();
-    var response = new MessageWithData<EndGameResultsDto>
+    if (game.State == GameState.RoundPlaying || game.State == GameState.RoundFinish)
     {
-      Type = MessageType.EndGameResults,
-      Data = new EndGameResultsDto { Players = playersDto, Tracks = game.DrawnTracks }
-    };
-
-    await webSocketSender.SendToPlayer(playerGuid, gameId, response);
+      var playersDto = game
+        .Players.Select(
+          (player) =>
+            new PlayerDto
+            {
+              Guid = player.Guid,
+              Nickname = player.Nickname,
+              Score = player.Score,
+              RoundResults = player.RoundResults
+            }
+        )
+        .ToList();
+      var response = new MessageWithData<EndGameResultsDto>
+      {
+        Type = MessageType.EndGameResults,
+        Data = new EndGameResultsDto { Players = playersDto, Tracks = game.DrawnTracks }
+      };
+      await webSocketSender.SendToPlayer(playerGuid, gameId, response);
+    }
 
     game.Players.Remove(player);
 
