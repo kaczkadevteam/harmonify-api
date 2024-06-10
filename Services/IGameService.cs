@@ -1,4 +1,3 @@
-using System.Net.WebSockets;
 using Harmonify.Messages;
 using Harmonify.Models;
 
@@ -13,7 +12,7 @@ public interface IGameService
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType);
   public void HandlePlayerReconnect(string playerGuid, string gameId);
   public Task SendPlayerList(string gameId);
-  public Task QuitGame(string gameId, string playerGuid, WebSocket ws);
+  public Task QuitGame(string gameId, string playerGuid);
   public bool TryStartGame(
     string id,
     StartGameDto data,
