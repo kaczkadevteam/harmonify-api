@@ -19,5 +19,4 @@ public interface IWebSocketReceiverService
     out MessageError? response,
     out int statusCode
   );
-  public string GetWsConnections();
 }

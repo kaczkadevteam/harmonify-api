@@ -183,6 +183,23 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
+  private async Task WaitAndStartNextRound(Game game)
+  {
+    await Task.Run(async () =>
+    {
+      if (game.IsPaused)
+        return;
+
+      var startDate = DateTime.Now;
+      await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
+
+      if (game.LastPauseDate > startDate)
+        return;
+
+      await StartNextRound(game);
+    });
+  }
+
   private async Task StartNextRound(Game game)
   {
     game.CurrentRound++;
@@ -248,7 +265,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       await EndGame(game.Id);
       return;
     }
-
     game.State = GameState.RoundFinish;
 
     game.Players.ForEach((player) => AssertPlayerHasAllRoundResults(player, game.CurrentRound));
@@ -273,8 +289,41 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     };
     await webSocketSender.SendToAllPlayers(game.Id, response);
 
-    await Task.Delay(TimeSpan.FromSeconds(game.Settings.BreakDurationBetweenRounds));
-    await StartNextRound(game);
+    _ = WaitAndStartNextRound(game);
+  }
+
+  public async Task ResumeGame(string gameId, string hostGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    if (game == null || game.Host.Guid != hostGuid || !game.IsPaused)
+    {
+      return;
+    }
+
+    game.IsPaused = false;
+
+    var response = new Message { Type = MessageType.GameResumed };
+    await webSocketSender.SendToAllPlayers(gameId, response);
+
+    if (game.State == GameState.RoundFinish)
+    {
+      _ = WaitAndStartNextRound(game);
+    }
+  }
+
+  public async Task PauseGame(string gameId, string hostGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    if (game == null || game.Host.Guid != hostGuid || game.IsPaused)
+    {
+      return;
+    }
+
+    game.IsPaused = true;
+    game.LastPauseDate = DateTime.Now;
+
+    var response = new Message { Type = MessageType.GamePaused };
+    await webSocketSender.SendToAllPlayers(gameId, response);
   }
 
   private static void AssertPlayerHasAllRoundResults(Player player, int currentRound)

@@ -87,16 +87,6 @@ public class WebSocketReceiverService(
     catch (Exception) { }
   }
 
-  public string GetWsConnections()
-  {
-    string data = "";
-    foreach (var item in connectionRepository.GetAll())
-    {
-      data = data + "{" + item.ToString() + "}\n\n";
-    }
-    return data;
-  }
-
   public async Task ListenForMessages(WebSocketConnection connection)
   {
     while (true)
@@ -141,6 +131,16 @@ public class WebSocketReceiverService(
         await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
         await WebSocketHelper.CloseSafely(connection.WS);
         return;
+      }
+
+      if (message.Type == MessageType.PauseGame)
+      {
+        await gameService.PauseGame(connection.GameId, connection.PlayerGuid);
+      }
+
+      if (message.Type == MessageType.ResumeGame)
+      {
+        await gameService.ResumeGame(connection.GameId, connection.PlayerGuid);
       }
 
       await HandleIncomingMessage(connection, message);
