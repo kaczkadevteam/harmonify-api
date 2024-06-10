@@ -71,6 +71,52 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return true;
   }
 
+  public async Task QuitGame(string gameId, string playerGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    if (game == null)
+    {
+      return;
+    }
+    var player = game.Players.Find(player => player.Guid == playerGuid);
+    if (player == null)
+    {
+      return;
+    }
+
+    if (player.Guid == game.Host.Guid && game.State == GameState.GameSetup)
+    {
+      await RemoveGameAndConnections(game.Id);
+      return;
+    }
+
+    if (game.State == GameState.RoundPlaying || game.State == GameState.RoundFinish)
+    {
+      var playersDto = game
+        .Players.Select(
+          (player) =>
+            new PlayerDto
+            {
+              Guid = player.Guid,
+              Nickname = player.Nickname,
+              Score = player.Score,
+              RoundResults = player.RoundResults
+            }
+        )
+        .ToList();
+      var response = new MessageWithData<EndGameResultsDto>
+      {
+        Type = MessageType.EndGameResults,
+        Data = new EndGameResultsDto { Players = playersDto, Tracks = game.DrawnTracks }
+      };
+      await webSocketSender.SendToPlayer(playerGuid, gameId, response);
+    }
+
+    game.Players.Remove(player);
+
+    await SendPlayerList(game, webSocketSender);
+  }
+
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType)
   {
     if (messageType == MessageType.StartGame || messageType == MessageType.EndGame)
@@ -93,6 +139,11 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     {
       return;
     }
+    await SendPlayerList(game, webSocketSender);
+  }
+
+  private static async Task SendPlayerList(Game game, IWebSocketSenderService webSocketSender)
+  {
     var response = new MessageWithData<List<PlayerInfoDto>>
     {
       Type = MessageType.PlayerList,
@@ -104,7 +155,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         })
         .ToList()
     };
-    await webSocketSender.SendToAllPlayers(gameId, response);
+    await webSocketSender.SendToAllPlayers(game.Id, response);
   }
 
   public bool TryStartGame(
@@ -305,8 +356,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
-    game.State = GameState.GameFinish;
-
     var playersDto = game
       .Players.Select(
         (player) =>
@@ -324,18 +373,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       game.Players.Select(
         async (player) =>
         {
-          if (player.RoundResults.Count != game.CurrentRound)
-          {
-            player.RoundResults.Add(
-              new RoundResult
-              {
-                Guess = "",
-                Score = 0,
-                GuessLevel = GuessLevel.None
-              }
-            );
-          }
-
           var response = new MessageWithData<EndGameResultsDto>
           {
             Type = MessageType.EndGameResults,
@@ -346,8 +383,15 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         }
       )
     );
-    await webSocketSender.EndConnections(id);
-    gameRepository.RemoveGame(id);
+
+    game.State = GameState.GameFinish;
+    await RemoveGameAndConnections(game.Id);
+  }
+
+  private async Task RemoveGameAndConnections(string gameId)
+  {
+    await webSocketSender.EndConnections(gameId);
+    gameRepository.RemoveGame(gameId);
   }
 
   public bool TryEvaluatePlayerGuess(string gameId, string playerGuid, string userGuess)

@@ -8,6 +8,7 @@ public interface IConnectionRepository
   WebSocketConnection? GetByPlayerGuid(string playerGuid);
   List<WebSocketConnection> GetAllByGameId(string gameId);
   List<WebSocketConnection> GetAll();
+  void RemoveByPlayerGuid(string playerGuid);
   void RemoveAllByGameId(string gameId);
   bool IsAnyPlayerConnected(string gameId);
 }

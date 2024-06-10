@@ -12,6 +12,7 @@ public interface IGameService
   public bool IsAuthorized(string gameId, string playerGuid, MessageType messageType);
   public void HandlePlayerReconnect(string playerGuid, string gameId);
   public Task SendPlayerList(string gameId);
+  public Task QuitGame(string gameId, string playerGuid);
   public Task PauseGame(string gameId, string hostGuid);
   public Task ResumeGame(string gameId, string hostGuid);
   public bool TryStartGame(
