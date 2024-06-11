@@ -2,6 +2,22 @@
 
 <div align="right">
 
+## v1.1.0 (2024-06-11)
+
+</div>
+
+## Description
+
+Added ability to quit game
+
+## What's Changed
+
+-   Feature/dev 112 - Add quit game option by @radkam2000 in https://github.com/kaczkadevteam/harmonify-api/pull/24
+
+**Full Changelog**: https://github.com/kaczkadevteam/harmonify-api/compare/v1.0.1...v1.1.0
+
+<div align="right">
+
 ## v1.0.1 (2024-06-09)
 
 </div>
