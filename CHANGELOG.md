@@ -12,7 +12,7 @@ Added ability to quit game
 
 ## What's Changed
 
--   Feature/dev 112 - Add quit game option by @radkam2000 in https://github.com/kaczkadevteam/harmonify-api/pull/24
+-   Feature/dev 112 - Add quit game option by @radkam2000 & @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/24
 
 **Full Changelog**: https://github.com/kaczkadevteam/harmonify-api/compare/v1.0.1...v1.1.0
 
