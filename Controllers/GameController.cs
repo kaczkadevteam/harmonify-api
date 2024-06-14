@@ -7,8 +7,11 @@ using Microsoft.Extensions.Primitives;
 namespace Harmonify.Controllers;
 
 [ApiController]
-public class GameController(IGameService gameService, IWebSocketReceiverService webSocketService)
-  : ControllerBase
+public class GameController(
+  IGameService gameService,
+  IPlayerService playerService,
+  IWebSocketReceiverService webSocketService
+) : ControllerBase
 {
   [ApiExplorerSettings(IgnoreApi = true)]
   [Route("create")]
@@ -57,7 +60,7 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
     }
 
     var player = new Player();
-    gameService.AddPlayer(id, player);
+    playerService.AddPlayer(id, player);
     var playerInfo = new PlayerInfoDto { Guid = player.Guid, Nickname = player.Nickname };
     var response = new MessageWithData<PlayerInfoDto>
     {
