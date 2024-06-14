@@ -90,7 +90,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
-    if (game.State == GameState.RoundPlaying || game.State == GameState.RoundFinish)
+    if (game.State == GameState.RoundPlaying || game.State == GameState.RoundResult)
     {
       var playersDto = game
         .Players.Select(
@@ -267,11 +267,11 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
 
     if (game.CurrentRound == game.Settings.RoundCount)
     {
-      game.State = GameState.GameFinish;
+      game.State = GameState.GameResult;
       await EndGame(game.Id);
       return;
     }
-    game.State = GameState.RoundFinish;
+    game.State = GameState.RoundResult;
 
     game.Players.ForEach((player) => AssertPlayerHasAllRoundResults(player, game.CurrentRound));
 
@@ -311,7 +311,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     var response = new Message { Type = MessageType.GameResumed };
     await webSocketSender.SendToAllPlayers(gameId, response);
 
-    if (game.State == GameState.RoundFinish)
+    if (game.State == GameState.RoundResult)
     {
       _ = WaitAndStartNextRound(game);
     }
@@ -384,7 +384,7 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       )
     );
 
-    game.State = GameState.GameFinish;
+    game.State = GameState.GameResult;
     await RemoveGameAndConnections(game.Id);
   }
 
