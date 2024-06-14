@@ -18,7 +18,10 @@ builder
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
 builder.Services.AddSingleton<IConnectionRepository, ConnectionRepository>();
 
+builder.Services.AddSingleton<IPlayerService, PlayerService>();
 builder.Services.AddSingleton<IGameService, GameService>();
+builder.Services.AddSingleton<IRoundService, RoundService>();
+builder.Services.AddSingleton<IGameInterruptionService, GameInterruptionService>();
 builder.Services.AddSingleton<IWebSocketReceiverService, WebSocketReceiverService>();
 builder.Services.AddSingleton<IWebSocketSenderService, WebSocketSenderService>();
 

@@ -7,8 +7,11 @@ using Microsoft.Extensions.Primitives;
 namespace Harmonify.Controllers;
 
 [ApiController]
-public class GameController(IGameService gameService, IWebSocketReceiverService webSocketService)
-  : ControllerBase
+public class GameController(
+  IGameService gameService,
+  IPlayerService playerService,
+  IWebSocketReceiverService webSocketReceiver
+) : ControllerBase
 {
   [ApiExplorerSettings(IgnoreApi = true)]
   [Route("create")]
@@ -34,7 +37,7 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
       }
     };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-    await webSocketService.StartConnection(webSocket, game.Id, player.Guid, createdGame);
+    await webSocketReceiver.StartConnection(webSocket, game.Id, player.Guid, createdGame);
   }
 
   [ApiExplorerSettings(IgnoreApi = true)]
@@ -57,7 +60,7 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
     }
 
     var player = new Player();
-    gameService.AddPlayer(id, player);
+    playerService.AddPlayer(id, player);
     var playerInfo = new PlayerInfoDto { Guid = player.Guid, Nickname = player.Nickname };
     var response = new MessageWithData<PlayerInfoDto>
     {
@@ -65,7 +68,7 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
       Data = playerInfo
     };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-    await webSocketService.StartConnection(webSocket, id, player.Guid, response);
+    await webSocketReceiver.StartConnection(webSocket, id, player.Guid, response);
   }
 
   [ApiExplorerSettings(IgnoreApi = true)]
@@ -79,7 +82,7 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
     }
 
     if (
-      webSocketService.TryGetExistingConnection(
+      webSocketReceiver.TryGetExistingConnection(
         playerGuid,
         out var connection,
         out var response,
@@ -88,7 +91,7 @@ public class GameController(IGameService gameService, IWebSocketReceiverService 
     )
     {
       using var newWebSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-      await webSocketService.Reconnect(connection!, newWebSocket);
+      await webSocketReceiver.Reconnect(connection!, newWebSocket);
     }
     else
     {

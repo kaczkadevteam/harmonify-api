@@ -8,6 +8,8 @@ namespace Harmonify.Services;
 
 public class WebSocketReceiverService(
   IGameService gameService,
+  IPlayerService playerService,
+  IGameInterruptionService gameInterruptionService,
   IConnectionRepository connectionRepository,
   IWebSocketSenderService sender
 ) : IWebSocketReceiverService
@@ -109,7 +111,7 @@ public class WebSocketReceiverService(
         continue;
       }
 
-      if (!gameService.IsAuthorized(connection.GameId, connection.PlayerGuid, message.Type))
+      if (!playerService.IsAuthorized(connection.GameId, connection.PlayerGuid, message.Type))
       {
         var response = new MessageError
         {
@@ -139,12 +141,12 @@ public class WebSocketReceiverService(
 
       if (message.Type == MessageType.PauseGame)
       {
-        await gameService.PauseGame(connection.GameId, connection.PlayerGuid);
+        await gameInterruptionService.PauseGame(connection.GameId, connection.PlayerGuid);
       }
 
       if (message.Type == MessageType.ResumeGame)
       {
-        await gameService.ResumeGame(connection.GameId, connection.PlayerGuid);
+        await gameInterruptionService.ResumeGame(connection.GameId, connection.PlayerGuid);
       }
 
       await HandleIncomingMessage(connection, message);
@@ -158,7 +160,7 @@ public class WebSocketReceiverService(
     if (message.Type == MessageType.StartGame && message is MessageWithData<StartGameDto> msg)
     {
       if (
-        gameService.TryStartGame(
+        gameInterruptionService.TryStartGame(
           connection.GameId,
           msg.Data,
           out var timestamp,
@@ -200,12 +202,12 @@ public class WebSocketReceiverService(
     }
     else if (message.Type == MessageType.Guess && message is MessageWithData<string> msg2)
     {
-      if (gameService.TryEvaluatePlayerGuess(connection.GameId, connection.PlayerGuid, msg2.Data))
+      if (playerService.TryEvaluatePlayerGuess(connection.GameId, connection.PlayerGuid, msg2.Data))
       {
         var response = new Message { Type = MessageType.Acknowledged };
 
         await WebSocketHelper.SendMessage(connection.WS, response);
-        await gameService.TryEndRoundIfAllGuessessSubmitted(connection.GameId);
+        await gameInterruptionService.TryEndRoundIfAllGuessessSubmitted(connection.GameId);
       }
     }
     else if (
@@ -213,7 +215,7 @@ public class WebSocketReceiverService(
       && message is MessageWithData<string> newNickname
     )
     {
-      if (gameService.TryChangeName(connection.GameId, connection.PlayerGuid, newNickname.Data))
+      if (playerService.TryChangeName(connection.GameId, connection.PlayerGuid, newNickname.Data))
       {
         await gameService.SendPlayerList(connection.GameId);
       }
