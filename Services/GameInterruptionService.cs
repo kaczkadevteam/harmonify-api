@@ -7,7 +7,7 @@ namespace Harmonify.Services;
 
 public class GameInterruptionService(
   IGameRepository gameRepository,
-  IRoundService gameFlowService,
+  IRoundService roundService,
   IWebSocketSenderService webSocketSender
 ) : IGameInterruptionService
 {
@@ -38,7 +38,7 @@ public class GameInterruptionService(
     timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     uri = game.CurrentTrack.Uri;
     preview_url = game.CurrentTrack.Preview_url;
-    gameFlowService.StartRound(game, timestamp);
+    roundService.StartRound(game, timestamp);
     return true;
   }
 
@@ -57,7 +57,7 @@ public class GameInterruptionService(
 
     if (game.State == GameState.RoundResult)
     {
-      _ = gameFlowService.WaitAndStartNextRound(game);
+      _ = roundService.WaitAndStartNextRound(game);
     }
   }
 
@@ -82,7 +82,7 @@ public class GameInterruptionService(
 
     if (game?.State == GameState.RoundPlaying && GameHelper.HasEveryPlayerFinished(game))
     {
-      await gameFlowService.EndRound(game);
+      await roundService.EndRound(game);
       return true;
     }
 

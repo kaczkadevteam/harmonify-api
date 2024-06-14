@@ -10,7 +10,7 @@ namespace Harmonify.Controllers;
 public class GameController(
   IGameService gameService,
   IPlayerService playerService,
-  IWebSocketReceiverService webSocketService
+  IWebSocketReceiverService webSocketReceiver
 ) : ControllerBase
 {
   [ApiExplorerSettings(IgnoreApi = true)]
@@ -37,7 +37,7 @@ public class GameController(
       }
     };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-    await webSocketService.StartConnection(webSocket, game.Id, player.Guid, createdGame);
+    await webSocketReceiver.StartConnection(webSocket, game.Id, player.Guid, createdGame);
   }
 
   [ApiExplorerSettings(IgnoreApi = true)]
@@ -68,7 +68,7 @@ public class GameController(
       Data = playerInfo
     };
     using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-    await webSocketService.StartConnection(webSocket, id, player.Guid, response);
+    await webSocketReceiver.StartConnection(webSocket, id, player.Guid, response);
   }
 
   [ApiExplorerSettings(IgnoreApi = true)]
@@ -82,7 +82,7 @@ public class GameController(
     }
 
     if (
-      webSocketService.TryGetExistingConnection(
+      webSocketReceiver.TryGetExistingConnection(
         playerGuid,
         out var connection,
         out var response,
@@ -91,7 +91,7 @@ public class GameController(
     )
     {
       using var newWebSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-      await webSocketService.Reconnect(connection!, newWebSocket);
+      await webSocketReceiver.Reconnect(connection!, newWebSocket);
     }
     else
     {
