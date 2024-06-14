@@ -12,4 +12,6 @@ Api service developed for [Harmonify](https://github.com/kaczkadevteam/harmonify
 ### Used technologies
 
 [<img align="left" width="26" height="26" alt=".NET" src="https://api.iconify.design/logos:dotnet.svg" style="padding: 0 20px 16px 0"/>](https://learn.microsoft.com/en-us/dotnet/ ".NET")
-[<img width="26" height="26" alt="C#" src="https://api.iconify.design/devicon:csharp.svg" style="padding: 0 20px 16px 0"/>](https://learn.microsoft.com/pl-pl/dotnet/csharp/ "C#")
+[<img align="left" width="26" height="26" alt="C#" src="https://api.iconify.design/devicon:csharp.svg" style="padding: 0 20px 16px 0"/>](https://learn.microsoft.com/pl-pl/dotnet/csharp/ "C#")
+[<img width="26" height="26" alt="Docker" src="https://api.iconify.design/logos:docker-icon.svg" style="padding: 0 20px 16px 0"/>](https://www.docker.com "Docker")
+
