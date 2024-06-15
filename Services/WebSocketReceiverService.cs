@@ -207,7 +207,16 @@ public class WebSocketReceiverService(
         var response = new Message { Type = MessageType.Acknowledged };
 
         await WebSocketHelper.SendMessage(connection.WS, response);
-        await gameInterruptionService.TryEndRoundIfAllGuessessSubmitted(connection.GameId);
+
+        IList<string> disconnectedPlayersIds = connectionRepository
+          .GetAllByGameId(connection.GameId)
+          .Where((c) => c.WS.State == WebSocketState.Closed)
+          .Select((c) => c.PlayerGuid)
+          .ToList();
+        await gameInterruptionService.TryEndRoundIfAllGuessessSubmitted(
+          connection.GameId,
+          disconnectedPlayersIds
+        );
       }
     }
     else if (

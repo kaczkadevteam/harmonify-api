@@ -3,17 +3,11 @@ using Harmonify.Helpers;
 
 namespace Harmonify.Models;
 
-public class Player
+[method: SetsRequiredMembers]
+public class Player()
 {
-  public required string Nickname { get; set; }
-  public required string Guid { get; init; }
+  public required string Nickname { get; set; } = NameGenerator.GetName();
+  public required string Guid { get; init; } = System.Guid.NewGuid().ToString();
   public int Score { get; set; } = 0;
   public List<RoundResult> RoundResults { get; set; } = [];
-
-  [SetsRequiredMembers]
-  public Player()
-  {
-    Guid = System.Guid.NewGuid().ToString();
-    Nickname = NameGenerator.GetName();
-  }
 }
