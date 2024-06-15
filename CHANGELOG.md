@@ -2,6 +2,24 @@
 
 <div align="right">
 
+## v1.1.1 (2024-06-15)
+
+</div>
+
+## Description
+
+Done major refactor, fixed round not being skippable if any player disconnected
+
+## What's Changed
+
+-   Feature/dev 138 - Create docker config by @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/26
+-   Refactor/dev 134 - Refactor of GameService by @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/27
+-   Feature/dev 135 - Ignore disconnected players when checking if everyone guessed by @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/28
+
+**Full Changelog**: https://github.com/kaczkadevteam/harmonify-api/compare/v1.1.0...v1.1.1
+
+<div align="right">
+
 ## v1.1.0 (2024-06-11)
 
 </div>
