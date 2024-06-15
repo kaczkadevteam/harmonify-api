@@ -14,5 +14,8 @@ public interface IGameInterruptionService
   public Task ResumeGame(string gameId, string hostGuid);
   public Task PauseGame(string gameId, string hostGuid);
 
-  public Task<bool> TryEndRoundIfAllGuessessSubmitted(string gameId);
+  public Task<bool> TryEndRoundIfAllGuessessSubmitted(
+    string gameId,
+    IList<string> disconnectedPlayersIds
+  );
 }

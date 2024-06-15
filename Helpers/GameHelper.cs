@@ -4,9 +4,11 @@ namespace Harmonify.Helpers;
 
 public static class GameHelper
 {
-  public static bool HasEveryPlayerFinished(Game game)
+  public static bool HasEveryPlayerFinished(Game game, IList<string> disconnectedPlayersIds)
   {
-    return !game.Players.Exists((p) => p.RoundResults.Count != game.CurrentRound);
+    return !game.Players.Exists(
+      (p) => !disconnectedPlayersIds.Contains(p.Guid) && p.RoundResults.Count != game.CurrentRound
+    );
   }
 
   public static List<Track> DrawTracksRandomly(List<Track> tracks, int count)

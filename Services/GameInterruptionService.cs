@@ -76,11 +76,17 @@ public class GameInterruptionService(
     await webSocketSender.SendToAllPlayers(gameId, response);
   }
 
-  public async Task<bool> TryEndRoundIfAllGuessessSubmitted(string gameId)
+  public async Task<bool> TryEndRoundIfAllGuessessSubmitted(
+    string gameId,
+    IList<string> disconnectedPlayersIds
+  )
   {
     var game = gameRepository.GetGame(gameId);
 
-    if (game?.State == GameState.RoundPlaying && GameHelper.HasEveryPlayerFinished(game))
+    if (
+      game?.State == GameState.RoundPlaying
+      && GameHelper.HasEveryPlayerFinished(game, disconnectedPlayersIds)
+    )
     {
       await roundService.EndRound(game);
       return true;
