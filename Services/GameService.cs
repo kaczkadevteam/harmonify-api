@@ -39,6 +39,11 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     return gameRepository.GameExists(id);
   }
 
+  public GameState? GetStateIfExists(string id)
+  {
+    return gameRepository.GetGame(id)?.State;
+  }
+
   public async Task QuitGame(string gameId, string playerGuid)
   {
     var game = gameRepository.GetGame(gameId);

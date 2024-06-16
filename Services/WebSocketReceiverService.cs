@@ -130,12 +130,7 @@ public class WebSocketReceiverService(
 
       if (message.Type == MessageType.QuitGame)
       {
-        await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
-
-        await WebSocketHelper.CloseSafely(connection.WS);
-
-        connectionRepository.RemoveByPlayerGuid(connection.PlayerGuid);
-        await EndGameIfNoOneConnected(connection.GameId);
+        await DisconnectPlayerDuringGame(connection);
         return;
       }
 
@@ -242,6 +237,12 @@ public class WebSocketReceiverService(
   {
     if (connection.WS.State != WebSocketState.Closed)
     {
+      if (gameService.GetStateIfExists(connection.GameId) == GameState.GameSetup)
+      {
+        await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
+        connectionRepository.RemoveByPlayerGuid(connection.PlayerGuid);
+      }
+
       await WebSocketHelper.CloseSafely(connection.WS);
 
       await EndGameIfNoOneConnected(connection.GameId);
@@ -257,5 +258,14 @@ public class WebSocketReceiverService(
       connectionRepository.RemoveAllByGameId(gameId);
       await gameService.EndGame(gameId);
     }
+  }
+
+  private async Task DisconnectPlayerDuringGame(WebSocketConnection connection)
+  {
+    await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
+    connectionRepository.RemoveByPlayerGuid(connection.PlayerGuid);
+
+    await WebSocketHelper.CloseSafely(connection.WS);
+    await EndGameIfNoOneConnected(connection.GameId);
   }
 }
