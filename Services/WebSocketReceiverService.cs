@@ -139,16 +139,6 @@ public class WebSocketReceiverService(
         return;
       }
 
-      if (message.Type == MessageType.PauseGame)
-      {
-        await gameInterruptionService.PauseGame(connection.GameId, connection.PlayerGuid);
-      }
-
-      if (message.Type == MessageType.ResumeGame)
-      {
-        await gameInterruptionService.ResumeGame(connection.GameId, connection.PlayerGuid);
-      }
-
       await HandleIncomingMessage(connection, message);
     }
 
@@ -237,6 +227,14 @@ public class WebSocketReceiverService(
         };
         await WebSocketHelper.SendMessage(connection.WS, response);
       }
+    }
+    else if (message.Type == MessageType.PauseGame)
+    {
+      await gameInterruptionService.PauseGame(connection.GameId, connection.PlayerGuid);
+    }
+    else if (message.Type == MessageType.ResumeGame)
+    {
+      await gameInterruptionService.ResumeGame(connection.GameId, connection.PlayerGuid);
     }
   }
 
