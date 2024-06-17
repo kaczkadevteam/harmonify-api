@@ -130,23 +130,8 @@ public class WebSocketReceiverService(
 
       if (message.Type == MessageType.QuitGame)
       {
-        await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
-
-        await WebSocketHelper.CloseSafely(connection.WS);
-
-        connectionRepository.RemoveByPlayerGuid(connection.PlayerGuid);
-        await EndGameIfNoOneConnected(connection.GameId);
+        await DisconnectPlayerDuringGame(connection);
         return;
-      }
-
-      if (message.Type == MessageType.PauseGame)
-      {
-        await gameInterruptionService.PauseGame(connection.GameId, connection.PlayerGuid);
-      }
-
-      if (message.Type == MessageType.ResumeGame)
-      {
-        await gameInterruptionService.ResumeGame(connection.GameId, connection.PlayerGuid);
       }
 
       await HandleIncomingMessage(connection, message);
@@ -238,12 +223,26 @@ public class WebSocketReceiverService(
         await WebSocketHelper.SendMessage(connection.WS, response);
       }
     }
+    else if (message.Type == MessageType.PauseGame)
+    {
+      await gameInterruptionService.PauseGame(connection.GameId, connection.PlayerGuid);
+    }
+    else if (message.Type == MessageType.ResumeGame)
+    {
+      await gameInterruptionService.ResumeGame(connection.GameId, connection.PlayerGuid);
+    }
   }
 
   private async Task HandleDisconnectFromClient(WebSocketConnection connection)
   {
     if (connection.WS.State != WebSocketState.Closed)
     {
+      if (gameService.GetStateIfExists(connection.GameId) == GameState.GameSetup)
+      {
+        await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
+        connectionRepository.RemoveByPlayerGuid(connection.PlayerGuid);
+      }
+
       await WebSocketHelper.CloseSafely(connection.WS);
 
       await EndGameIfNoOneConnected(connection.GameId);
@@ -259,5 +258,14 @@ public class WebSocketReceiverService(
       connectionRepository.RemoveAllByGameId(gameId);
       await gameService.EndGame(gameId);
     }
+  }
+
+  private async Task DisconnectPlayerDuringGame(WebSocketConnection connection)
+  {
+    await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
+    connectionRepository.RemoveByPlayerGuid(connection.PlayerGuid);
+
+    await WebSocketHelper.CloseSafely(connection.WS);
+    await EndGameIfNoOneConnected(connection.GameId);
   }
 }
