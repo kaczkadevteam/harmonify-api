@@ -5,5 +5,6 @@ public enum GuessLevel
   Full,
   Album,
   Artist,
-  None
+  None,
+  Disconnected
 }

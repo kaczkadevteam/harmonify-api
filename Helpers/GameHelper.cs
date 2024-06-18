@@ -40,7 +40,7 @@ public static class GameHelper
         {
           Guess = "",
           Score = 0,
-          GuessLevel = GuessLevel.None
+          GuessLevel = player.Connected ? GuessLevel.None : GuessLevel.Disconnected
         }
       );
     }
