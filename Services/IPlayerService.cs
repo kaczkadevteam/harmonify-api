@@ -9,5 +9,6 @@ public interface IPlayerService
   bool TryChangeName(string id, string playerGuid, string newNickname);
   bool TryEvaluatePlayerGuess(string gameId, string playerGuid, string userGuess);
   bool IsAuthorized(string gameId, string playerGuid, MessageType messageType);
+  void DisconnectPlayer(string gameId, string playerGuid);
   void HandlePlayerReconnect(string playerGuid, string gameId);
 }

@@ -242,6 +242,10 @@ public class WebSocketReceiverService(
         await gameService.QuitGame(connection.GameId, connection.PlayerGuid);
         connectionRepository.RemoveByPlayerGuid(connection.PlayerGuid);
       }
+      else
+      {
+        playerService.DisconnectPlayer(connection.GameId, connection.PlayerGuid);
+      }
 
       await WebSocketHelper.CloseSafely(connection.WS);
 

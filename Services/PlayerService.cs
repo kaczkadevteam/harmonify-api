@@ -75,6 +75,16 @@ public class PlayerService(IGameRepository gameRepository) : IPlayerService
     return true;
   }
 
+  public void DisconnectPlayer(string gameId, string playerGuid)
+  {
+    var player = gameRepository.GetGame(gameId)?.Players.Find((p) => p.Guid == playerGuid);
+
+    if (player != null)
+    {
+      player.Connected = false;
+    }
+  }
+
   public void HandlePlayerReconnect(string playerGuid, string gameId)
   {
     throw new NotImplementedException();
