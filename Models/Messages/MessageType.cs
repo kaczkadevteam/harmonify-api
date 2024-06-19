@@ -9,6 +9,7 @@ public enum MessageType
   Guess,
   ChangeName,
   QuitGame,
+  PlayAgain,
   PauseGame,
   ResumeGame,
 

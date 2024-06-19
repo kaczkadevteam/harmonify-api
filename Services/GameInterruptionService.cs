@@ -7,6 +7,7 @@ namespace Harmonify.Services;
 
 public class GameInterruptionService(
   IGameRepository gameRepository,
+  IGameService gameService,
   IRoundService roundService,
   IWebSocketSenderService webSocketSender
 ) : IGameInterruptionService
@@ -34,6 +35,7 @@ public class GameInterruptionService(
     game.Settings = data.GameSettings;
 
     game.CurrentRound = 1;
+    gameService.RemoveDisconnectedPlayers(game);
 
     timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     uri = game.CurrentTrack.Uri;

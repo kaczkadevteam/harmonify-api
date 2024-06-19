@@ -63,4 +63,15 @@ public class WebSocketSenderService(IConnectionRepository connectionRepository)
 
     connectionRepository.RemoveAllByGameId(gameId);
   }
+
+  public async Task EndConnection(string gameId, string playerGuid)
+  {
+    var connection = connectionRepository.GetByPlayerGuid(playerGuid);
+
+    if (connection == null)
+      return;
+
+    await WebSocketHelper.CloseSafely(connection.WS, "Game finished");
+    connectionRepository.RemoveByPlayerGuid(playerGuid);
+  }
 }

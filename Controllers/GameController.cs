@@ -61,7 +61,12 @@ public class GameController(
 
     var player = new Player();
     playerService.AddPlayer(id, player);
-    var playerInfo = new PlayerInfoDto { Guid = player.Guid, Nickname = player.Nickname };
+    var playerInfo = new PlayerInfoDto
+    {
+      Guid = player.Guid,
+      Nickname = player.Nickname,
+      Connected = player.Connected
+    };
     var response = new MessageWithData<PlayerInfoDto>
     {
       Type = MessageType.NewPlayer,

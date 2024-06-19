@@ -27,4 +27,30 @@ public class Game
       TrackStartLowerBound = 0.1f,
       TrackStartUpperBound = 0.9f
     };
+
+  public void Reset()
+  {
+    Players.ForEach(
+      (p) =>
+      {
+        p.Score = 0;
+        p.RoundResults = [];
+      }
+    );
+    State = GameState.GameSetup;
+    IsPaused = false;
+    CurrentRound = 1;
+    Tracks = [];
+    DrawnTracks = [];
+    Settings = new GameSettings
+    {
+      RoundDuration = 30,
+      BreakDurationBetweenTrackPlays = 3,
+      BreakDurationBetweenRounds = 10,
+      RoundCount = 20,
+      TrackDuration = 10,
+      TrackStartLowerBound = 0.1f,
+      TrackStartUpperBound = 0.9f
+    };
+  }
 }

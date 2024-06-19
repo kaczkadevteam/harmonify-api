@@ -28,7 +28,10 @@ public class GameRepository : IGameRepository
 
   public void RemoveGame(string id)
   {
-    Console.WriteLine($"Removed game {id}");
-    games.RemoveAll((game) => game.Id == id);
+    var count = games.RemoveAll((game) => game.Id == id);
+    if (count > 0)
+    {
+      Console.WriteLine($"Removed game {id}");
+    }
   }
 }

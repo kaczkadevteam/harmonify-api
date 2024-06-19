@@ -231,6 +231,10 @@ public class WebSocketReceiverService(
     {
       await gameInterruptionService.ResumeGame(connection.GameId, connection.PlayerGuid);
     }
+    else if (message.Type == MessageType.PlayAgain)
+    {
+      await gameService.PlayAgain(connection.GameId, connection.PlayerGuid);
+    }
   }
 
   private async Task HandleDisconnectFromClient(WebSocketConnection connection)
@@ -259,8 +263,7 @@ public class WebSocketReceiverService(
 
     if (!isAnyPlayerConnected)
     {
-      connectionRepository.RemoveAllByGameId(gameId);
-      await gameService.EndGame(gameId);
+      await gameService.RemoveGameAndConnections(gameId);
     }
   }
 

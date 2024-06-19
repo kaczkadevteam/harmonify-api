@@ -57,10 +57,17 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
-    if (player.Guid == game.Host.Guid && game.State == GameState.GameSetup)
+    if (player.Guid == game.Host.Guid)
     {
-      await RemoveGameAndConnections(game.Id);
-      return;
+      if (game.State == GameState.GameSetup)
+      {
+        await RemoveGameAndConnections(game.Id);
+        return;
+      }
+      else
+      {
+        game.Host.Connected = false;
+      }
     }
 
     if (game.State == GameState.RoundPlaying || game.State == GameState.RoundResult)
@@ -85,7 +92,43 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     await SendGameResultToPlayers(game, game.Players);
 
     game.State = GameState.GameResult;
-    await RemoveGameAndConnections(game.Id);
+
+    if (game.Host.Connected)
+    {
+      game.Reset();
+      game.Players.ForEach((p) => p.Connected = false);
+      await SendPlayerList(game);
+    }
+    else
+    {
+      await RemoveGameAndConnections(game.Id);
+    }
+  }
+
+  public async Task PlayAgain(string gameId, string playerGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    var player = game?.Players.Find((p) => p.Guid == playerGuid);
+
+    if (game == null || player == null)
+      return;
+
+    player.Connected = true;
+    await SendPlayerList(game);
+  }
+
+  public async Task RemoveDisconnectedPlayers(Game game)
+  {
+    await Task.WhenAll(
+      game.Players.FindAll((p) => !p.Connected)
+        .Select(
+          async (p) =>
+          {
+            await webSocketSender.EndConnection(game.Id, p.Guid);
+          }
+        )
+    );
+    game.Players.RemoveAll((p) => !p.Connected);
   }
 
   public async Task RemoveGameAndConnections(string gameId)
@@ -113,7 +156,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         .Players.Select(player => new PlayerInfoDto
         {
           Guid = player.Guid,
-          Nickname = player.Nickname
+          Nickname = player.Nickname,
+          Connected = player.Connected
         })
         .ToList()
     };
