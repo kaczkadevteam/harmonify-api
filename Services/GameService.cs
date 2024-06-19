@@ -105,6 +105,18 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     }
   }
 
+  public async Task PlayAgain(string gameId, string playerGuid)
+  {
+    var game = gameRepository.GetGame(gameId);
+    var player = game?.Players.Find((p) => p.Guid == playerGuid);
+
+    if (game == null || player == null)
+      return;
+
+    player.Connected = true;
+    await SendPlayerList(game);
+  }
+
   public async Task RemoveDisconnectedPlayers(Game game)
   {
     await Task.WhenAll(
