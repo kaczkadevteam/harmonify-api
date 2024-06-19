@@ -57,10 +57,17 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
       return;
     }
 
-    if (player.Guid == game.Host.Guid && game.State == GameState.GameSetup)
+    if (player.Guid == game.Host.Guid)
     {
-      await RemoveGameAndConnections(game.Id);
-      return;
+      if (game.State == GameState.GameSetup)
+      {
+        await RemoveGameAndConnections(game.Id);
+        return;
+      }
+      else
+      {
+        game.Host.Connected = false;
+      }
     }
 
     if (game.State == GameState.RoundPlaying || game.State == GameState.RoundResult)
