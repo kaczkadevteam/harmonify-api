@@ -259,8 +259,7 @@ public class WebSocketReceiverService(
 
     if (!isAnyPlayerConnected)
     {
-      connectionRepository.RemoveAllByGameId(gameId);
-      await gameService.EndGame(gameId);
+      await gameService.RemoveGameAndConnections(gameId);
     }
   }
 

@@ -85,7 +85,6 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     await SendGameResultToPlayers(game, game.Players);
 
     game.State = GameState.GameResult;
-    await RemoveGameAndConnections(game.Id);
   }
 
   public async Task RemoveGameAndConnections(string gameId)
