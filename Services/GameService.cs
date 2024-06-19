@@ -89,6 +89,20 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
     game.Players.ForEach((p) => p.Connected = false);
   }
 
+  public async Task RemoveDisconnectedPlayers(Game game)
+  {
+    await Task.WhenAll(
+      game.Players.FindAll((p) => !p.Connected)
+        .Select(
+          async (p) =>
+          {
+            await webSocketSender.EndConnection(game.Id, p.Guid);
+          }
+        )
+    );
+    game.Players.RemoveAll((p) => !p.Connected);
+  }
+
   public async Task RemoveGameAndConnections(string gameId)
   {
     await webSocketSender.EndConnections(gameId);

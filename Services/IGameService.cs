@@ -9,6 +9,7 @@ public interface IGameService
   GameState? GetStateIfExists(string id);
   Task QuitGame(string gameId, string playerGuid);
   Task EndGame(string id);
+  Task RemoveDisconnectedPlayers(Game game);
   Task RemoveGameAndConnections(string gameId);
   Task SendPlayerList(string gameId);
 }
