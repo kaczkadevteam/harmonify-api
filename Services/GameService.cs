@@ -112,7 +112,8 @@ public class GameService(IGameRepository gameRepository, IWebSocketSenderService
         .Players.Select(player => new PlayerInfoDto
         {
           Guid = player.Guid,
-          Nickname = player.Nickname
+          Nickname = player.Nickname,
+          Connected = player.Connected
         })
         .ToList()
     };
