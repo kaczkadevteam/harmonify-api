@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Harmonify.Messages;
 using Harmonify.Models;
-using Harmonify.Services;
 
 namespace Harmonify.Helpers;
 
@@ -29,7 +28,7 @@ public static class WebSocketHelper
   {
     WebSocketReceiveResult receiveResult;
     string jsonString = "";
-    const int WebsocketMessagePartsLimit = 30;
+    const int WebsocketMessagePartsLimit = 50;
     int messagePartsCount = 0;
 
     do
