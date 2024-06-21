@@ -2,6 +2,24 @@
 
 <div align="right">
 
+## v1.2.0 (2024-06-22)
+
+</div>
+
+## Description
+
+Improved behaviour related to disconnecting players. Added play again option
+
+## What's Changed
+
+-   Feature/dev 122 - Delete players who left in setup by @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/29
+-   Feature/dev 136 - Different guess icon for disconnected players by @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/30
+-   Feature/dev 103 - Play again by @MarcinSkic in https://github.com/kaczkadevteam/harmonify-api/pull/31
+
+**Full Changelog**: https://github.com/kaczkadevteam/harmonify-api/compare/v1.1.1...v1.2.0
+
+<div align="right">
+
 ## v1.1.1 (2024-06-15)
 
 </div>
